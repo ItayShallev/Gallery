@@ -309,6 +309,28 @@ void AlbumManager::removeUser()
 		closeAlbum();
 	}
 
+	// Removing the albums of the user
+	const std::list<Album>& albums = m_dataAccess.getAlbumsOfUser(user);
+	for (const Album& album : albums)
+	{
+		m_dataAccess.deleteAlbum(album.getName(), user.getId());
+	}
+
+	// Untagging the user from all the pictures in the Gallery
+	const std::list<Album>& allAlbums = m_dataAccess.getAlbums();
+	for (const Album& album : allAlbums)
+	{
+		const std::list<Picture>& pictures = album.getPictures();
+		for (const Picture& picture : pictures)
+		{
+			if (picture.isUserTagged(user))
+			{
+				m_dataAccess.untagUserInPicture(album.getName(), picture.getName(), user.getId());
+			}
+		}
+	}
+
+	// Removing the from the system
 	m_dataAccess.deleteUser(user);
 	std::cout << "User @" << userId << " deleted successfully." << std::endl;
 }
@@ -329,6 +351,7 @@ void AlbumManager::userStatistics()
 	const User& user = m_dataAccess.getUser(userId);
 
 	std::cout << "user @" << userId << " Statistics:" << std::endl << "--------------------" << std::endl <<
+		"  + Count of Albums: " << m_dataAccess.countAlbumsOwnedOfUser(user) << std::endl <<
 		"  + Count of Albums Tagged: " << m_dataAccess.countAlbumsTaggedOfUser(user) << std::endl <<
 		"  + Count of Tags: " << m_dataAccess.countTagsOfUser(user) << std::endl <<
 		"  + Avarage Tags per Alboum: " << m_dataAccess.averageTagsPerAlbumOfUser(user) << std::endl;

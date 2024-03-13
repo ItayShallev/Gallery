@@ -3,6 +3,9 @@
 #include "MemoryAccess.h"
 #include "AlbumManager.h"
 
+#define DATE_TIME_BUFFER_SIZE	100
+
+
 
 int getCommandNumberFromUser()
 {
@@ -28,6 +31,18 @@ int getCommandNumberFromUser()
 	return std::atoi(input.c_str());
 }
 
+
+void printDateAndTime()
+{
+	std::time_t currentTime = std::time(nullptr);
+	char timeBuffer[DATE_TIME_BUFFER_SIZE];
+
+	std::strftime(timeBuffer, 80, "%d-%m-%Y %H:%M", std::localtime(&currentTime));
+	std::cout << "Current date and time: " << timeBuffer << std::endl;
+}
+
+
+
 int main(void)
 {
 	// initialization data access
@@ -38,9 +53,13 @@ int main(void)
 
 
 	std::string albumName;
-	std::cout << "Welcome to Gallery!" << std::endl;
-	std::cout << "===================" << std::endl;
+	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;
+
+	printDateAndTime();
+	std::cout << "=============================================" << std::endl << std::endl;
+
 	std::cout << "Type " << HELP << " to a list of all supported commands" << std::endl;
+
 	
 	do {
 		int commandNumber = getCommandNumberFromUser();
