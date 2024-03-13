@@ -309,6 +309,28 @@ void AlbumManager::removeUser()
 		closeAlbum();
 	}
 
+	// Removing the albums of the user
+	const std::list<Album>& albums = m_dataAccess.getAlbumsOfUser(user);
+	for (const Album& album : albums)
+	{
+		m_dataAccess.deleteAlbum(album.getName(), user.getId());
+	}
+
+	// Untagging the user from all the pictures in the Gallery
+	const std::list<Album>& allAlbums = m_dataAccess.getAlbums();
+	for (const Album& album : allAlbums)
+	{
+		const std::list<Picture>& pictures = album.getPictures();
+		for (const Picture& picture : pictures)
+		{
+			if (picture.isUserTagged(user))
+			{
+				m_dataAccess.untagUserInPicture(album.getName(), picture.getName(), user.getId());
+			}
+		}
+	}
+
+	// Removing the from the system
 	m_dataAccess.deleteUser(user);
 	std::cout << "User @" << userId << " deleted successfully." << std::endl;
 }
