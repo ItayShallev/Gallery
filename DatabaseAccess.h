@@ -54,4 +54,7 @@ public:
 
 private:
 	sqlite3* _DB;
+
+	std::list<Album> _albums;
+	std::list<User> _users;
 };
