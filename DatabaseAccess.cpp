@@ -22,6 +22,12 @@
 													  FOREIGN KEY (PICTURE_ID) REFERENCES PICTURES(ID),
 													  FOREIGN KEY (USER_ID) REFERENCES USERS(ID));)"
 
+
+DatabaseAccess::~DatabaseAccess()
+{
+	sqlite3_close(this->_DB);
+}
+
 /**
  @brief			Initializes the Gallery database by creating necessary tables if they do not exist.
  @return		True if the database is successfully initialized, false otherwise
@@ -41,7 +47,7 @@ bool DatabaseAccess::initDatabase()
 		return false;
 	}
 
-	return true;	
+	return true;
 }
 
 
@@ -71,4 +77,15 @@ bool DatabaseAccess::open()
 	}
 
 	return true;
+}
+
+
+/**
+ @brief			Closes the Gallery database
+ @return		Void
+ */
+void DatabaseAccess::close()
+{
+	sqlite3_close(this->_DB);
+	this->_DB = nullptr;
 }
