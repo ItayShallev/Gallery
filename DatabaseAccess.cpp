@@ -28,6 +28,7 @@ DatabaseAccess::~DatabaseAccess()
 	sqlite3_close(this->_DB);
 }
 
+
 /**
  @brief			Initializes the Gallery database by creating necessary tables if they do not exist.
  @return		True if the database is successfully initialized, false otherwise
@@ -88,4 +89,15 @@ void DatabaseAccess::close()
 {
 	sqlite3_close(this->_DB);
 	this->_DB = nullptr;
+}
+
+
+/**
+ @brief			Clears the data that stored in the class
+ @return		Void
+ */
+void DatabaseAccess::clear()
+{
+	this->_albums.clear();
+	this->_users.clear();
 }
