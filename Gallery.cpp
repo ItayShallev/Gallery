@@ -2,6 +2,7 @@
 #include <string>
 #include "MemoryAccess.h"
 #include "AlbumManager.h"
+#include "DatabaseAccess.h"
 
 #define DATE_TIME_BUFFER_SIZE	100
 
@@ -46,7 +47,8 @@ void printDateAndTime()
 int main(void)
 {
 	// initialization data access
-	MemoryAccess dataAccess;
+	//MemoryAccess dataAccess;
+	DatabaseAccess dataAccess;
 
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);

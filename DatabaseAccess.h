@@ -10,7 +10,7 @@ class DatabaseAccess : public IDataAccess
 {
 public:
 	DatabaseAccess() = default;
-	virtual ~DatabaseAccess() = default;
+	virtual ~DatabaseAccess();
 
 	// album related
 	const std::list<Album> getAlbums() override;
@@ -54,5 +54,4 @@ public:
 
 private:
 	sqlite3* _DB;
-
 };
