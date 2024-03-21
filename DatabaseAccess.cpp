@@ -101,3 +101,14 @@ void DatabaseAccess::clear()
 	this->_albums.clear();
 	this->_users.clear();
 }
+
+
+/**
+ @brief			Closes the opened album
+ @return		Void
+ @note			Does nothing since the "openedAlbum" member is at the AlbumManager class
+ */
+void DatabaseAccess::closeAlbum(Album& pAlbum)
+{
+	// AlbumManager takes care of closing the album
+}
