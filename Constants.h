@@ -3,6 +3,8 @@
 #include <vector>
 #include <map>
 
+const std::string DB_FILE_NAME = "Gallery.sqlite";
+
 enum CommandType
 {
 	HELP = 0,
@@ -46,3 +48,5 @@ struct CommandGroup {
 	const std::string title;
 	const std::vector<struct CommandPrompt> commands;
 };
+
+#define DATABASE_EXISTS 0
