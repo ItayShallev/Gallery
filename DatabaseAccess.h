@@ -23,8 +23,6 @@ public:
 	void printAlbums() override;
 
 	// picture related
-	int getPictureIDByName(const std::string& pictureName);
-
 	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) override;
 	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) override;
 	void tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
@@ -57,6 +55,13 @@ public:
 	bool executeSqlStatement(const std::string& statement);
 	template<typename funcPtr>
 	bool executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam);
+
+	// Get info from DB
+	static int getAlbumIDCallback(void* data, int argc, char** argv, char** azColName);
+	int getAlbumID(const std::string& albumName, int userId);
+
+	static int getPictureIDCallback(void* data, int argc, char** argv, char** azColName);
+	int getPictureID(const std::string& pictureName, int albumID);
 
 
 private:

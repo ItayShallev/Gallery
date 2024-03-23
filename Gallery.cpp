@@ -62,7 +62,7 @@ int main(void)
 
 	std::cout << "Type " << HELP << " to a list of all supported commands" << std::endl;
 
-	
+
 	do {
 		int commandNumber = getCommandNumberFromUser();
 		

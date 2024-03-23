@@ -92,14 +92,14 @@ void DatabaseAccess::removePictureFromAlbumByName(const std::string& albumName, 
 }
 
 
-int DatabaseAccess::getPictureIDByName(const std::string& pictureName)
-{
-	return 0;
-}
-
-
 void DatabaseAccess::tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
 {
+	std::string insertToTags = R"(
+					INSERT INTO TAGS
+					(PICTURE_ID, USER_ID)
+					VALUES ()
+					)";
+
 }
 
 
@@ -162,7 +162,11 @@ float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
 	return 0.0f;
 }
 
-
+/**
+ @brief
+ @param
+ @return
+ */
 // ******************* Queries *******************
 
 User DatabaseAccess::getTopTaggedUser()
@@ -283,7 +287,7 @@ bool DatabaseAccess::executeSqlStatement(const std::string& statement)
  @return	A boolean value indicating whether the operation succeeded or not
  */
 template<typename funcPtr>
-inline bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam)
+bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam)
 {
 	char* errMessage = nullptr;
 	int res = sqlite3_exec(this->_DB, query.c_str(), callbackFunction, callbackParam, &errMessage);
@@ -291,7 +295,7 @@ inline bool DatabaseAccess::executeSqlQuery(const std::string& query, const func
 	if (res != SQLITE_OK)
 	{
 		sqlite3_close(this->_DB);
-		db = nullptr;
+		this->_DB = nullptr;
 
 		std::cout << "Failed to send the query: " << std::endl << errMessage << std::endl;
 
@@ -299,4 +303,87 @@ inline bool DatabaseAccess::executeSqlQuery(const std::string& query, const func
 	}
 
 	return true;
+}
+
+
+// ******************* Get Info *******************
+
+
+/**
+ @brief		Callback function for getting the ID of an album by its name and owner
+ @param		data			A pointer to an integer where the retrieved Album ID will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getAlbumIDCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<int*>(data)) = std::atoi(argv[0]);		// Returning the Album ID by storing it inside data (sqlite3_exec 4th argument)
+
+	return 0;
+}
+
+
+/**
+ @brief		Gets an ID of an album by its name and owner
+ @param		albumName		The name of the album to get its ID
+ @param		userID			The ID of the owner user of the album to get its ID
+ @return	The ID of the specified album
+ */
+int DatabaseAccess::getAlbumID(const std::string& albumName, int userId)
+{
+	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT ID FROM ALBUMS
+					WHERE NAME = ')" + albumName + "' AND USER_ID = " + std::to_string(userId) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	int albumID = -1;
+	if (!executeSqlQuery(selectQuery, getAlbumIDCallback, &albumID)) { return -1; }
+
+	return albumID;
+}
+
+
+/**
+ @brief		Callback function for getting the ID of a picture by its name and album ID
+ @param		data			A pointer to an integer where the retrieved Picture ID will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	The ID of the specified album
+ */
+int DatabaseAccess::getPictureIDCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<int*>(data)) = std::atoi(argv[0]);		// Returning the Picture ID by storing it inside data (sqlite3_exec 4th argument)
+
+	return 0;
+}
+
+
+/**
+ @brief		Gets an ID of a picture by its name and album ID
+ @param		pictureName		The name of the picture to get its ID
+ @param		albumID			The ID of the album that the picture belongs to to get its ID
+ @return	The ID of the specified picture
+ */
+int DatabaseAccess::getPictureID(const std::string& pictureName, int albumID)
+{
+	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT ID FROM PICTURES
+					WHERE NAME = ')" + pictureName + "' AND ALBUM_ID = " + std::to_string(albumID) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	int pictureID = -1;
+	if (!executeSqlQuery(selectQuery, getPictureIDCallback, &pictureID)) { return -1; }
+
+	return pictureID;
 }
