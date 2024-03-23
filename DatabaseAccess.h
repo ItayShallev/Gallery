@@ -23,6 +23,8 @@ public:
 	void printAlbums() override;
 
 	// picture related
+	int getPictureIDByName(const std::string& pictureName);
+
 	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) override;
 	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) override;
 	void tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
@@ -46,10 +48,15 @@ public:
 	Picture getTopTaggedPicture() override;
 	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
 
+	// DB
 	bool initDatabase();
 	bool open() override;
 	void close() override;
 	void clear() override;
+
+	bool executeSqlStatement(const std::string& statement);
+	template<typename funcPtr>
+	bool executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam);
 
 
 private:
