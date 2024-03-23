@@ -22,6 +22,22 @@ USER_ID INTEGER NOT NULL,
 FOREIGN KEY (PICTURE_ID) REFERENCES PICTURES(ID),
 FOREIGN KEY (USER_ID) REFERENCES USERS(ID));)"
 
+// DEBUG
+#define INSERT_TO_USERS R"(INSERT INTO USERS (NAME) VALUES ('User1'), ('User2'), ('User3'), ('User4'), ('User5');)"
+
+#define INSERT_TO_ALBUMS R"(INSERT INTO ALBUMS
+(NAME, CREATION_DATE, USER_ID)
+VALUES ('Album1', '01/01/2001', 1), ('Album2', '02/02/2002', 2), ('Album3', '03/03/2003', 3), ('Album4', '04/04/2004', 4), ('Album5', '05/05/2005', 5);)"
+
+#define INSERT_INTO_PICTURES R"(INSERT INTO PICTURES
+(NAME, LOCATION, CREATION_DATE, ALBUM_ID)
+VALUES ('Picture1', '/images', '01/01/2001', 1),
+('Picture2', '/images', '02/02/2002', 2),
+('Picture3', '/images', '03/03/2003', 3),
+('Picture4', '/images', '04/04/2004', 4),
+('Picture5', '/images', '05/05/2005', 5);)"
+// DEBUG
+
 
 DatabaseAccess::~DatabaseAccess()
 {
@@ -92,14 +108,24 @@ void DatabaseAccess::removePictureFromAlbumByName(const std::string& albumName, 
 }
 
 
+/**
+ @brief		Tags a user in a picture
+ @param     albumName       The name of the album that contains the picture to tag the user in
+ @param		pictureName		The name of the picture to tag the user in
+ @param     userId          The id of the user to tag in the picture
+ @return	Void
+ */
 void DatabaseAccess::tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
 {
+	int albumID = getAlbumID(albumName);
+	int pictureID = getPictureID(pictureName, albumID);
+
 	std::string insertToTags = R"(
 					INSERT INTO TAGS
 					(PICTURE_ID, USER_ID)
-					VALUES ()
-					)";
+					VALUES ()" + std::to_string(pictureID) + ", " + std::to_string(userId) + ")";
 
+	executeSqlStatement(insertToTags);
 }
 
 
@@ -198,6 +224,10 @@ bool DatabaseAccess::initDatabase()
 	std::string initStatement = std::string(USERS_TABLE_SQL_STATEMENT) + ALBUMS_TABLE_SQL_STATEMENT + PICTURES_TABLE_SQL_STATEMENT + TAGS_TABLE_SQL_STATEMENT;
 
 	if (!this->executeSqlStatement(initStatement)) { return false; }
+
+	std::string insertToTables = std::string(INSERT_TO_USERS) + std::string(INSERT_TO_ALBUMS) + std::string(INSERT_INTO_PICTURES);
+
+	if (!this->executeSqlStatement(insertToTables)) { return false; }
 
 	return true;
 }
@@ -338,6 +368,23 @@ int DatabaseAccess::getAlbumID(const std::string& albumName, int userId)
 
 					SELECT ID FROM ALBUMS
 					WHERE NAME = ')" + albumName + "' AND USER_ID = " + std::to_string(userId) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	int albumID = -1;
+	if (!executeSqlQuery(selectQuery, getAlbumIDCallback, &albumID)) { return -1; }
+
+	return albumID;
+}
+
+int DatabaseAccess::getAlbumID(const std::string& albumName)
+{
+	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT ID FROM ALBUMS
+					WHERE NAME = ')" + albumName + R"(';
 					
 					END TRANSACTION;
 					)";

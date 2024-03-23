@@ -59,6 +59,7 @@ public:
 	// Get info from DB
 	static int getAlbumIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getAlbumID(const std::string& albumName, int userId);
+	int getAlbumID(const std::string& albumName);
 
 	static int getPictureIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getPictureID(const std::string& pictureName, int albumID);
