@@ -125,12 +125,27 @@ void DatabaseAccess::tagUserInPicture(const std::string& albumName, const std::s
 					(PICTURE_ID, USER_ID)
 					VALUES ()" + std::to_string(pictureID) + ", " + std::to_string(userId) + ")";
 
-	executeSqlStatement(insertToTags);
+	std::cout << executeSqlStatement(insertToTags);
 }
 
 
+/**
+ @brief		Untags a user in a picture
+ @param     albumName       The name of the album that contains the picture to untag the user from
+ @param		pictureName		The name of the picture to untag the user from
+ @param     userId          The id of the user to untag from the picture
+ @return	Void
+ */
 void DatabaseAccess::untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
 {
+	int albumID = getAlbumID(albumName);
+	int pictureID = getPictureID(pictureName, albumID);
+
+	std::string deleteFromTags = R"(
+                    DELETE FROM TAGS
+                    WHERE PICTURE_ID = )" + std::to_string(pictureID) + " AND USER_ID = " + std::to_string(userId);
+	
+	executeSqlStatement(deleteFromTags);
 }
 
 
