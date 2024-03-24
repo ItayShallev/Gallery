@@ -128,8 +128,24 @@ User DatabaseAccess::getUser(int userId)
 }
 
 
+/**
+ @brief			Creates a new user
+ @param			The user to create in the Users table
+ @return		Void
+ */
 void DatabaseAccess::createUser(User& user)
 {
+	std::string createUser = R"(
+		BEGIN TRANSACTION;
+
+		INSERT INTO USERS
+		(ID, NAME)
+		VALUES ()" + std::to_string(user.getId()) + ", '" + user.getName() + R"(');
+		
+		END TRANSACTION;
+		)";
+
+	executeSqlStatement(createUser);
 }
 
 
