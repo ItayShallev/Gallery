@@ -53,9 +53,6 @@ int main(void)
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
 
-	//dataAccess.tagUserInPicture("Album1", "Picture1", 5);
-	dataAccess.untagUserInPicture("Album1", "Picture1", 5);
-
 	std::string albumName;
 	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;
 
