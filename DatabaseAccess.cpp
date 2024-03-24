@@ -124,7 +124,7 @@ void DatabaseAccess::printUsers()
 
 User DatabaseAccess::getUser(int userId)
 {
-	return User(0, "Itay");
+	return User(userId, "");
 }
 
 
@@ -149,14 +149,29 @@ void DatabaseAccess::createUser(User& user)
 }
 
 
+/**
+ @brief			Delete an existing user from the database
+ @param			The user to delete in the Users table
+ @return		Void
+ */
 void DatabaseAccess::deleteUser(const User& user)
 {
+	std::string deleteUserQuery = R"(
+					BEGIN TRANSACTION;
+					
+					DELETE FROM USERS
+					WHERE ID = )" + std::to_string(user.getId()) + R"(;
+					
+				    END TRANSACTION;
+					)";
+
+	executeSqlStatement(deleteUserQuery);
 }
 
 
 bool DatabaseAccess::doesUserExists(int userId)
 {
-	return false;
+	return true;
 }
 
 
