@@ -57,6 +57,9 @@ public:
 	bool executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam);
 
 	// Get info from DB
+	static int getNextUserIDCallback(void* data, int argc, char** argv, char** azColName);
+	int getNextUserID() override;
+
 	static int getAlbumIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getAlbumID(const std::string& albumName, int userId);
 	int getAlbumID(const std::string& albumName);

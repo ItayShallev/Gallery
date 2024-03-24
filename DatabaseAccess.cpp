@@ -1,43 +1,5 @@
 #include "DatabaseAccess.h"
 
-#define USERS_TABLE_SQL_STATEMENT R"(CREATE TABLE USERS(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-NAME TEXT NOT NULL);)"
-
-#define ALBUMS_TABLE_SQL_STATEMENT R"(CREATE TABLE ALBUMS(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-NAME TEXT NOT NULL,
-CREATION_DATE DATE NOT NULL,
-USER_ID INTEGER NOT NULL,
-FOREIGN KEY (USER_ID) REFERENCES USERS(ID));)"
-
-#define PICTURES_TABLE_SQL_STATEMENT R"(CREATE TABLE PICTURES(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-NAME TEXT NOT NULL,
-LOCATION TEXT NOT NULL,
-CREATION_DATE DATE NOT NULL,
-ALBUM_ID INTEGER NOT NULL,
-FOREIGN KEY (ALBUM_ID) REFERENCES ALBUMS(ID));)"
-
-#define TAGS_TABLE_SQL_STATEMENT R"(CREATE TABLE TAGS(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-PICTURE_ID INTEGER NOT NULL,
-USER_ID INTEGER NOT NULL,
-FOREIGN KEY (PICTURE_ID) REFERENCES PICTURES(ID),
-FOREIGN KEY (USER_ID) REFERENCES USERS(ID));)"
-
-// DEBUG
-#define INSERT_TO_USERS R"(INSERT INTO USERS (NAME) VALUES ('User1'), ('User2'), ('User3'), ('User4'), ('User5');)"
-
-#define INSERT_TO_ALBUMS R"(INSERT INTO ALBUMS
-(NAME, CREATION_DATE, USER_ID)
-VALUES ('Album1', '01/01/2001', 1), ('Album2', '02/02/2002', 2), ('Album3', '03/03/2003', 3), ('Album4', '04/04/2004', 4), ('Album5', '05/05/2005', 5);)"
-
-#define INSERT_INTO_PICTURES R"(INSERT INTO PICTURES
-(NAME, LOCATION, CREATION_DATE, ALBUM_ID)
-VALUES ('Picture1', '/images', '01/01/2001', 1),
-('Picture2', '/images', '02/02/2002', 2),
-('Picture3', '/images', '03/03/2003', 3),
-('Picture4', '/images', '04/04/2004', 4),
-('Picture5', '/images', '05/05/2005', 5);)"
-// DEBUG
-
 
 DatabaseAccess::~DatabaseAccess()
 {
@@ -45,7 +7,7 @@ DatabaseAccess::~DatabaseAccess()
 }
 
 
-// ******************* Album *******************
+// ********************************************************* Album *********************************************************
 
 const std::list<Album> DatabaseAccess::getAlbums()
 {
@@ -96,7 +58,9 @@ void DatabaseAccess::printAlbums()
 }
 
 
-// ******************* Picture *******************
+
+
+// ********************************************************* Picture *********************************************************
 
 void DatabaseAccess::addPictureToAlbumByName(const std::string& albumName, const Picture& picture)
 {
@@ -149,7 +113,9 @@ void DatabaseAccess::untagUserInPicture(const std::string& albumName, const std:
 }
 
 
-// ******************* Users *******************
+
+
+// ********************************************************* Users *********************************************************
 
 void DatabaseAccess::printUsers()
 {
@@ -178,7 +144,10 @@ bool DatabaseAccess::doesUserExists(int userId)
 }
 
 
-// ******************* Users Statistics *******************
+// ********************************************************* Users Statistics *********************************************************
+
+
+
 
 int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
 {
@@ -203,12 +172,10 @@ float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
 	return 0.0f;
 }
 
-/**
- @brief
- @param
- @return
- */
-// ******************* Queries *******************
+
+
+
+// ********************************************************* Queries *********************************************************
 
 User DatabaseAccess::getTopTaggedUser()
 {
@@ -228,7 +195,9 @@ std::list<Picture> DatabaseAccess::getTaggedPicturesOfUser(const User& user)
 }
 
 
-// ******************* Database *******************
+
+
+// ********************************************************* Database *********************************************************
 
 /**
  @brief			Initializes the Gallery database by creating necessary tables if they do not exist.
@@ -351,8 +320,31 @@ bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr cal
 }
 
 
-// ******************* Get Info *******************
 
+
+// ********************************************************* Get Info *********************************************************
+
+int DatabaseAccess::getNextUserIDCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<int*>(data)) = std::stoi(argv[0]);
+
+	return 0;
+}
+
+
+int DatabaseAccess::getNextUserID()
+{
+	std::string selectQuery = R"(
+					SELECT ID FROM USERS
+	                ORDER BY ID DESC
+					LIMIT 1;
+					)";
+
+	int nextUserID = -1;
+	executeSqlQuery(selectQuery, getNextUserIDCallback, &nextUserID);
+
+	return nextUserID;
+}
 
 /**
  @brief		Callback function for getting the ID of an album by its name and owner

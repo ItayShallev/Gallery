@@ -2,6 +2,7 @@
 #include <vector>
 #include "Constants.h"
 #include "MemoryAccess.h"
+#include "DatabaseAccess.h"
 #include "Album.h"
 
 
