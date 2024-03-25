@@ -54,6 +54,7 @@ public:
 	float averageTagsPerAlbumOfUser(const User& user) override;
 
 	// ****************************** Query ******************************
+	static int getTopTaggedUserCallback(void* data, int argc, char** argv, char** azColName);
 	User getTopTaggedUser() override;
 	Picture getTopTaggedPicture() override;
 	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
