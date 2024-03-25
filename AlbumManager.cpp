@@ -6,10 +6,14 @@
 
 
 AlbumManager::AlbumManager(IDataAccess& dataAccess) :
-    m_dataAccess(dataAccess), m_nextPictureId(100)
+    m_dataAccess(dataAccess)
 {
 	m_dataAccess.open();
 	this->m_nextUserId = this->m_dataAccess.getNextUserID();
+	this->m_nextPictureId = this->m_dataAccess.getNextPictureID();
+
+	std::cout << "next user id: " << this->m_nextUserId << std::endl;
+	std::cout << "next picture id: " << this->m_nextPictureId << std::endl;
 }
 
 void AlbumManager::executeCommand(CommandType command) {
