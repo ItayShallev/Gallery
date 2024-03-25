@@ -9,7 +9,7 @@
 class DatabaseAccess : public IDataAccess
 {
 public:
-	DatabaseAccess() = default;
+	DatabaseAccess();
 	virtual ~DatabaseAccess();
 
 	// album related
@@ -72,6 +72,8 @@ public:
 	// Get DB records in structure
 	static int getAlbumsRecordsCallback(void* data, int argc, char** argv, char** azColName);
 	std::list<Record> getAlbumsRecords();
+	std::list<Record> getUserAlbumsRecords(const int userID);
+	std::list<Album> buildAlbumsList(const std::list<Record>& albumRecords);
 
 	static int getAlbumPicturesRecordsCallback(void* data, int argc, char** argv, char** azColName);
 	std::list<Record> getAlbumPicturesRecords(const int albumID);

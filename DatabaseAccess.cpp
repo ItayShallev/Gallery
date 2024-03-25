@@ -1,6 +1,9 @@
 #include "DatabaseAccess.h"
 
 
+DatabaseAccess::DatabaseAccess() : _DB(nullptr) { };
+
+
 DatabaseAccess::~DatabaseAccess()
 {
 	sqlite3_close(this->_DB);
@@ -17,43 +20,18 @@ DatabaseAccess::~DatabaseAccess()
  */
 const std::list<Album> DatabaseAccess::getAlbums()
 {
-	std::list<Album> albumsList;
-
-	std::list<Record> albumsRecords = this->getAlbumsRecords();
-
-	// Adding all the albums in the DB to the Albums list
-	for (auto albumsIterator = albumsRecords.begin(); albumsIterator != albumsRecords.end(); ++albumsIterator)
-	{
-		Album currentAlbum(std::stoi(albumsIterator->at("USER_ID")), albumsIterator->at("NAME"), albumsIterator->at("CREATION_DATE"));
-
-		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(currentAlbum.getOwnerId());
-		
-		// Adding all the pictures in the album to the Album object
-		for (auto picturesIterator = albumPicturesRecords.begin(); picturesIterator != albumPicturesRecords.end(); ++picturesIterator)
-		{
-			Picture currentPicture(std::stoi(picturesIterator->at("ID")), picturesIterator->at("NAME"), picturesIterator->at("LOCATION"), picturesIterator->at("CREATION_DATE"));
-
-			std::list<Record> pictureTagsRecords = this->getPictureTagsRecords(currentPicture.getId());
-
-			// Adding all the tags in the picture to the Picture object
-			for (auto tagsIterator = pictureTagsRecords.begin(); tagsIterator != pictureTagsRecords.end(); ++tagsIterator)
-			{
-				currentPicture.tagUser(std::stoi(tagsIterator->at("USER_ID")));		// Adding the current tag to the Picture object
-			}
-			
-			currentAlbum.addPicture(currentPicture);		// Adding the current picture to the Album object
-		}
-
-		albumsList.push_back(currentAlbum);		// Adding the current album to the Albums list
-	}
-
-	return albumsList;
+	return this->buildAlbumsList(this->getAlbumsRecords());
 }
 
 
+/**
+ @brief		Returns all the albums of the given user
+ @param		user	The user to get its albums
+ @return	A list of all the albums of the given user (List<Album(Pictures(Tags))>)
+ */
 const std::list<Album> DatabaseAccess::getAlbumsOfUser(const User& user)
 {
-	return std::list<Album>();
+	return this->buildAlbumsList(this->getUserAlbumsRecords(user.getId()));
 }
 
 
@@ -668,6 +646,68 @@ std::list<Record> DatabaseAccess::getAlbumsRecords()
 
 	std::list<Record> albumsList;
 	executeSqlQuery(getAlbumsQuery, getAlbumsRecordsCallback, &albumsList);
+
+	return albumsList;
+}
+
+
+/**
+ @brief		Returns a list of all the album records of the given user from the database
+ @param     userID			The ID of the user to get the album records of
+ @return	A list of all the album records of the given user in the database
+ */
+std::list<Record> DatabaseAccess::getUserAlbumsRecords(const int userID)
+{
+	std::string getUserAlbumsQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM ALBUMS
+					WHERE USER_ID = )" + std::to_string(userID) + R"(;
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> userAlbumsList;
+	executeSqlQuery(getUserAlbumsQuery, getAlbumsRecordsCallback, &userAlbumsList);
+
+	return userAlbumsList;
+}
+
+
+/**
+ @brief		Builds a list of Album objects from the given list of album records
+ @param     albumsList        The list of album records to build the Album objects from
+ @return	A list of Album objects built from the given list of album records
+ */
+std::list<Album> DatabaseAccess::buildAlbumsList(const std::list<Record>& albumsRecords)
+{
+	std::list<Album> albumsList;
+
+	// Adding all the albums in the DB to the Albums list
+	for (auto albumsIterator = albumsRecords.begin(); albumsIterator != albumsRecords.end(); ++albumsIterator)
+	{
+		Album currentAlbum(std::stoi(albumsIterator->at("USER_ID")), albumsIterator->at("NAME"), albumsIterator->at("CREATION_DATE"));
+
+		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(currentAlbum.getOwnerId());
+
+		// Adding all the pictures in the album to the Album object
+		for (auto picturesIterator = albumPicturesRecords.begin(); picturesIterator != albumPicturesRecords.end(); ++picturesIterator)
+		{
+			Picture currentPicture(std::stoi(picturesIterator->at("ID")), picturesIterator->at("NAME"), picturesIterator->at("LOCATION"), picturesIterator->at("CREATION_DATE"));
+
+			std::list<Record> pictureTagsRecords = this->getPictureTagsRecords(currentPicture.getId());
+
+			// Adding all the tags in the picture to the Picture object
+			for (auto tagsIterator = pictureTagsRecords.begin(); tagsIterator != pictureTagsRecords.end(); ++tagsIterator)
+			{
+				currentPicture.tagUser(std::stoi(tagsIterator->at("USER_ID")));		// Adding the current tag to the Picture object
+			}
+
+			currentAlbum.addPicture(currentPicture);		// Adding the current picture to the Album object
+		}
+
+		albumsList.push_back(currentAlbum);		// Adding the current album to the Albums list
+	}
 
 	return albumsList;
 }
