@@ -96,6 +96,4 @@ VALUES ('Picture1', '/images', '01/01/2001', 1),
 #define INSERT_TO_TAGS R"(INSERT INTO TAGS
 (PICTURE_ID, USER_ID)
 VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6);)"
-
-
 // DEBUG

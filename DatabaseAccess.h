@@ -69,14 +69,17 @@ public:
 	static int getPictureIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getPictureID(const std::string& pictureName, int albumID);
 
-	// Get DB info in structure
-	static int getAlbumPicturesCallback(void* data, int argc, char** argv, char** azColName);
-	std::list<Record> getAlbumPictures(const int albumID);
+	// Get DB records in structure
+	static int getAlbumsRecordsCallback(void* data, int argc, char** argv, char** azColName);
+	std::list<Record> getAlbumsRecords();
+
+	static int getAlbumPicturesRecordsCallback(void* data, int argc, char** argv, char** azColName);
+	std::list<Record> getAlbumPicturesRecords(const int albumID);
+
+	static int getPictureTagsRecordsCallback(void* data, int argc, char** argv, char** azColName);
+	std::list<Record> getPictureTagsRecords(const int pictureID);
 
 
 private:
 	sqlite3* _DB;
-
-	std::list<Album> _albums;
-	std::list<User> _users;
 };
