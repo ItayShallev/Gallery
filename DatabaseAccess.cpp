@@ -460,9 +460,41 @@ int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
 }
 
 
+/**
+ @brief		Counts the amount of different albums that a given user is tagged in
+ @param     user		The uset to count how many different albums he is tagged in
+ @return	The amount of different albums that the given user is tagged in
+ */
 int DatabaseAccess::countAlbumsTaggedOfUser(const User& user)
 {
-	return 0;
+	int userAlbumsTagsCounter = 0;
+
+	std::list<Record> albumsRecords = this->getAlbumsRecords();
+
+	// Iterating over the albums records and counting how many albums the user is tagged in
+	for (auto albumsIterator = albumsRecords.begin(); albumsIterator != albumsRecords.end(); ++albumsIterator)
+	{
+		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(std::stoi(albumsIterator->at("ID")));
+		bool taggedPictureFound = false;
+
+		// Iterating over the current album pictures records and checking if the user is tagged in the picture
+		for (auto picturesIterator = albumPicturesRecords.begin(); (picturesIterator != albumPicturesRecords.end() && !taggedPictureFound); ++picturesIterator)
+		{
+			std::list<Record> pictureTagsRecords = this->getPictureTagsRecords(std::stoi(picturesIterator->at("ID")));
+
+			for (auto tagsIterator = pictureTagsRecords.begin(); tagsIterator != pictureTagsRecords.end(); ++tagsIterator)
+			{
+				if (std::stoi(tagsIterator->at("USER_ID")) == user.getId())		// Checking if the user id of the tag matches the user ID of the given user
+				{
+					userAlbumsTagsCounter++;
+					taggedPictureFound = true;		// Changing the flag - there is no need to go through all other pictures
+					break;							// Breaking			 - there is no need to go through all other tags
+				}
+			}
+		}
+	}
+
+	return userAlbumsTagsCounter;
 }
 
 
