@@ -47,11 +47,11 @@ void printDateAndTime()
 int main(void)
 {
 	// initialization data access
-	//MemoryAccess dataAccess;
 	DatabaseAccess dataAccess;
 
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
+
 
 	std::string albumName;
 	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;

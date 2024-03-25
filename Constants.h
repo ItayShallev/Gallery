@@ -49,6 +49,8 @@ struct CommandGroup {
 	const std::vector<struct CommandPrompt> commands;
 };
 
+typedef std::map<std::string, std::string> Record;
+
 #define DATABASE_EXISTS 0
 
 
@@ -75,11 +77,12 @@ FOREIGN KEY (PICTURE_ID) REFERENCES PICTURES(ID),
 FOREIGN KEY (USER_ID) REFERENCES USERS(ID));)"
 
 // DEBUG
-#define INSERT_TO_USERS R"(INSERT INTO USERS (NAME) VALUES ('User1'), ('User2'), ('User3'), ('User4'), ('User5');)"
+#define INSERT_TO_USERS R"(INSERT INTO USERS (NAME) VALUES ('User1'), ('User2'), ('User3'), ('User4'), ('User5'),  ('User6');)"
 
 #define INSERT_TO_ALBUMS R"(INSERT INTO ALBUMS
 (NAME, CREATION_DATE, USER_ID)
-VALUES ('Album1', '01/01/2001', 1), ('Album2', '02/02/2002', 2), ('Album3', '03/03/2003', 3), ('Album4', '04/04/2004', 4), ('Album5', '05/05/2005', 5);)"
+VALUES ('Album1', '01/01/2001', 1), ('Album2', '02/02/2002', 2), ('Album3', '03/03/2003', 3),
+('Album4', '04/04/2004', 4), ('Album5', '05/05/2005', 5), ('Album6', '06/06/2006', 6);)"
 
 #define INSERT_INTO_PICTURES R"(INSERT INTO PICTURES
 (NAME, LOCATION, CREATION_DATE, ALBUM_ID)
@@ -87,5 +90,12 @@ VALUES ('Picture1', '/images', '01/01/2001', 1),
 ('Picture2', '/images', '02/02/2002', 2),
 ('Picture3', '/images', '03/03/2003', 3),
 ('Picture4', '/images', '04/04/2004', 4),
-('Picture5', '/images', '05/05/2005', 5);)"
+('Picture5', '/images', '05/05/2005', 5),
+('Picture6', '/images', '06/06/2006', 6);)"
+
+#define INSERT_TO_TAGS R"(INSERT INTO TAGS
+(PICTURE_ID, USER_ID)
+VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6);)"
+
+
 // DEBUG

@@ -10,7 +10,6 @@ AlbumManager::AlbumManager(IDataAccess& dataAccess) :
 {
 	m_dataAccess.open();
 	this->m_nextUserId = this->m_dataAccess.getNextUserID();
-	std::cout << "Next user id: " << this->m_nextUserId << std::endl;
 }
 
 void AlbumManager::executeCommand(CommandType command) {
@@ -331,9 +330,11 @@ void AlbumManager::removeUser()
 		}
 	}
 
-	// Removing the from the system
+	// Removing the user from the system 
 	m_dataAccess.deleteUser(user);
 	std::cout << "User @" << userId << " deleted successfully." << std::endl;
+
+	this->m_nextUserId--;		// Decreasing the ID counter
 }
 
 void AlbumManager::listUsers()

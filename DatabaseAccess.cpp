@@ -7,6 +7,8 @@ DatabaseAccess::~DatabaseAccess()
 }
 
 
+
+
 // ********************************************************* Album *********************************************************
 
 const std::list<Album> DatabaseAccess::getAlbums()
@@ -26,14 +28,44 @@ void DatabaseAccess::createAlbum(const Album& album)
 }
 
 
+/**
+ @brief		Removes the album from the database
+ @param     albumName		The name of the album to remove
+ @param     userID			The ID of the user who owns the album
+ @return	Void
+ @note		The album removal removes also all the album-related information from the database (including Pictures and tags)
+ */
 void DatabaseAccess::deleteAlbum(const std::string& albumName, int userId)
 {
+	int albumID = this->getAlbumID(albumName);
+
+	// Creating a list of all the pictures in the album
+	std::list<Record> albumPictures = this->getAlbumPictures(albumID);
+
+	// Iterating over the pictures list, and removing all album inner data (Picture-Tags and Pictures) before removing the album itself
+	for (auto pictureIterator = albumPictures.begin(); pictureIterator != albumPictures.end(); ++pictureIterator)
+	{
+		this->removePictureTags(std::stoi(pictureIterator->at("ID")));
+		this->removePicture(std::stoi(pictureIterator->at("ID")));
+	}
+
+	// Removing the album itself
+	std::string deleteAlbumStatement = R"(
+                    BEGIN TRANSACTION;
+					
+				    DELETE FROM ALBUMS
+					WHERE ID = )" + std::to_string(albumID) + R"(;
+					
+                    END TRANSACTION;
+                    )";
+
+	executeSqlStatement(deleteAlbumStatement);
 }
 
 
 bool DatabaseAccess::doesAlbumExists(const std::string& albumName, int userId)
 {
-	return false;
+	return true;
 }
 
 
@@ -41,6 +73,7 @@ Album DatabaseAccess::openAlbum(const std::string& albumName)
 {
 	return Album();
 }
+
 
 /**
  @brief			Closes the opened album
@@ -73,6 +106,26 @@ void DatabaseAccess::removePictureFromAlbumByName(const std::string& albumName, 
 
 
 /**
+ @brief		Removes a picture from the DB
+ @param		pictureID		The ID of the picture to remove from the DB
+ @return	Void
+ */
+void DatabaseAccess::removePicture(const int pictureID)
+{
+	std::string removePictureStatement = R"(
+					BEGIN TRANSACTION;
+					
+					DELETE FROM PICTURES
+					WHERE ID = )" + std::to_string(pictureID) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	executeSqlStatement(removePictureStatement);
+}
+
+
+/**
  @brief		Tags a user in a picture
  @param     albumName       The name of the album that contains the picture to tag the user in
  @param		pictureName		The name of the picture to tag the user in
@@ -85,9 +138,14 @@ void DatabaseAccess::tagUserInPicture(const std::string& albumName, const std::s
 	int pictureID = getPictureID(pictureName, albumID);
 
 	std::string insertToTags = R"(
+					BEGIN TRANSACTION;
+					
 					INSERT INTO TAGS
 					(PICTURE_ID, USER_ID)
-					VALUES ()" + std::to_string(pictureID) + ", " + std::to_string(userId) + ")";
+					VALUES ()" + std::to_string(pictureID) + ", " + std::to_string(userId) + ")" + R"(;
+					
+					END TRANSACTION;
+					)";
 
 	std::cout << executeSqlStatement(insertToTags);
 }
@@ -106,10 +164,35 @@ void DatabaseAccess::untagUserInPicture(const std::string& albumName, const std:
 	int pictureID = getPictureID(pictureName, albumID);
 
 	std::string deleteFromTags = R"(
+					BEGIN TRANSACTION;
+					
                     DELETE FROM TAGS
-                    WHERE PICTURE_ID = )" + std::to_string(pictureID) + " AND USER_ID = " + std::to_string(userId);
+                    WHERE PICTURE_ID = )" + std::to_string(pictureID) + " AND USER_ID = " + std::to_string(userId) + R"(;
+					
+					END TRANSACTION;
+					)";
 	
 	executeSqlStatement(deleteFromTags);
+}
+
+
+/**
+ @brief		Removes all tags in the given picture from Tags table
+ @param		pictureID		The id of the picture to remove all tags from
+ @return	Void
+ */
+void DatabaseAccess::removePictureTags(const int pictureID)
+{
+	std::string deleteFromTagsStatement = R"(
+                    BEGIN TRANSACTION;
+                    
+                    DELETE FROM TAGS
+                    WHERE PICTURE_ID = )" + std::to_string(pictureID) + R"(;
+                    
+                    END TRANSACTION;
+                    )";
+
+	executeSqlStatement(deleteFromTagsStatement);
 }
 
 
@@ -135,7 +218,7 @@ User DatabaseAccess::getUser(int userId)
  */
 void DatabaseAccess::createUser(User& user)
 {
-	std::string createUser = R"(
+	std::string createUserStatement = R"(
 		BEGIN TRANSACTION;
 
 		INSERT INTO USERS
@@ -145,7 +228,7 @@ void DatabaseAccess::createUser(User& user)
 		END TRANSACTION;
 		)";
 
-	executeSqlStatement(createUser);
+	executeSqlStatement(createUserStatement);
 }
 
 
@@ -156,7 +239,7 @@ void DatabaseAccess::createUser(User& user)
  */
 void DatabaseAccess::deleteUser(const User& user)
 {
-	std::string deleteUserQuery = R"(
+	std::string deleteUserStatement = R"(
 					BEGIN TRANSACTION;
 					
 					DELETE FROM USERS
@@ -165,7 +248,7 @@ void DatabaseAccess::deleteUser(const User& user)
 				    END TRANSACTION;
 					)";
 
-	executeSqlStatement(deleteUserQuery);
+	executeSqlStatement(deleteUserStatement);
 }
 
 
@@ -175,10 +258,9 @@ bool DatabaseAccess::doesUserExists(int userId)
 }
 
 
+
+
 // ********************************************************* Users Statistics *********************************************************
-
-
-
 
 int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
 {
@@ -240,7 +322,7 @@ bool DatabaseAccess::initDatabase()
 
 	if (!this->executeSqlStatement(initStatement)) { return false; }
 
-	std::string insertToTables = std::string(INSERT_TO_USERS) + std::string(INSERT_TO_ALBUMS) + std::string(INSERT_INTO_PICTURES);
+	std::string insertToTables = std::string(INSERT_TO_USERS) + std::string(INSERT_TO_ALBUMS) + std::string(INSERT_INTO_PICTURES) + std::string(INSERT_TO_TAGS);
 
 	if (!this->executeSqlStatement(insertToTables)) { return false; }
 
@@ -324,12 +406,12 @@ bool DatabaseAccess::executeSqlStatement(const std::string& statement)
 
 
 /**
- @brief		Executes an SQL query on a SQLite database with a callback function for result rows
+ @brief		Executes an SQL query on an SQLite database
  @param		query				The query to execute
- @param		callbackFunction	The callback function for each result row
+ @param		callbackFunction	The callback function to call for each result row
  @param		callbackParam		The parameter for the callback function (The way of transmiting the SQL query result)
- @note		callbackFunction and callbackParam can be nullptrs
  @return	A boolean value indicating whether the operation succeeded or not
+ @note		callbackFunction and callbackParam can be nullptrs
  */
 template<typename funcPtr>
 bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam)
@@ -355,6 +437,14 @@ bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr cal
 
 // ********************************************************* Get Info *********************************************************
 
+/**
+ @brief		Callback function for getting the next user ID from the USERS-table-SELECT-query-response
+ @param		data			A pointer to an integer where the retrieved ID will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
 int DatabaseAccess::getNextUserIDCallback(void* data, int argc, char** argv, char** azColName)
 {
 	*(static_cast<int*>(data)) = std::stoi(argv[0]);
@@ -363,6 +453,10 @@ int DatabaseAccess::getNextUserIDCallback(void* data, int argc, char** argv, cha
 }
 
 
+/**
+ @brief		Returns the next user ID to create for a new user
+ @return	The next user ID to create for a new user
+ */
 int DatabaseAccess::getNextUserID()
 {
 	std::string selectQuery = R"(
@@ -376,6 +470,7 @@ int DatabaseAccess::getNextUserID()
 
 	return nextUserID;
 }
+
 
 /**
  @brief		Callback function for getting the ID of an album by its name and owner
@@ -416,6 +511,12 @@ int DatabaseAccess::getAlbumID(const std::string& albumName, int userId)
 	return albumID;
 }
 
+
+/**
+ @brief		Gets an ID of an album by its name
+ @param		albumName		The name of the album to get its ID
+ @return	The ID of the specified album
+ */
 int DatabaseAccess::getAlbumID(const std::string& albumName)
 {
 	std::string selectQuery = R"(
@@ -471,4 +572,74 @@ int DatabaseAccess::getPictureID(const std::string& pictureName, int albumID)
 	if (!executeSqlQuery(selectQuery, getPictureIDCallback, &pictureID)) { return -1; }
 
 	return pictureID;
+}
+
+
+
+
+// ********************************************************* Get Info In Structure *********************************************************
+
+/**
+ @brief		Callback function for a list of the pictures of an album from the PICTURES-table-SELECT-query-response
+ @param		data			A pointer to a list of Records where the retrieved pictures will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getAlbumPicturesCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Record currentPictureRecord;
+	
+	// Inserting the current picture record into a Record object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "ID")
+		{
+			currentPictureRecord.insert({ "ID", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "NAME")
+		{
+			currentPictureRecord.insert({ "NAME", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "LOCATION")
+		{
+			currentPictureRecord.insert({ "LOCATION", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "CREATION_DATE")
+		{
+			currentPictureRecord.insert({ "CREATION_DATE", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "ALBUM_ID")
+		{
+			currentPictureRecord.insert({ "ALBUM_ID", argv[i] });
+		}
+	}
+
+	static_cast<std::list<Record>*>(data)->push_back(currentPictureRecord);		// Pushing the created Record object into the picture records list
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns a list of picture records of the given album
+ @param		albumID			The ID of the album to get its pictures
+ @return	A list of picture records of the given album
+ */
+std::list<Record> DatabaseAccess::getAlbumPictures(const int albumID)
+{
+	std::string getTagsQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM PICTURES
+                    WHERE ALBUM_ID = )" + std::to_string(albumID) + R"(;
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> picturesList;
+	executeSqlQuery(getTagsQuery, getAlbumPicturesCallback, &picturesList);
+
+	return picturesList;
 }

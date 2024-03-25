@@ -25,8 +25,10 @@ public:
 	// picture related
 	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) override;
 	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) override;
+	void removePicture(const int pictureID);
 	void tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 	void untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
+	void removePictureTags(const int pictureID);
 
 	// user related
 	void printUsers() override;
@@ -66,6 +68,10 @@ public:
 
 	static int getPictureIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getPictureID(const std::string& pictureName, int albumID);
+
+	// Get DB info in structure
+	static int getAlbumPicturesCallback(void* data, int argc, char** argv, char** azColName);
+	std::list<Record> getAlbumPictures(const int albumID);
 
 
 private:
