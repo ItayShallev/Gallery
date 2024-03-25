@@ -594,6 +594,14 @@ User DatabaseAccess::getTopTaggedUser()
 }
 
 
+/**
+ @brief		Callback function for getting the top tagged picture in the database
+ @param		data			A pointer to a Picture object where the top tagged picture will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
 int DatabaseAccess::getTopTaggedPictureCallback(void* data, int argc, char** argv, char** azColName)
 {
 	Picture* topTaggedPicture = static_cast<Picture*>(data);
@@ -623,6 +631,10 @@ int DatabaseAccess::getTopTaggedPictureCallback(void* data, int argc, char** arg
 }
 
 
+/**
+ @brief		Returns the top tagged picture in the database
+ @return	The top tagged picture in the database
+ */
 Picture DatabaseAccess::getTopTaggedPicture()
 {
 	std::string getTopTaggedPictureQuery = R"(
@@ -644,9 +656,29 @@ Picture DatabaseAccess::getTopTaggedPicture()
 }
 
 
+/**
+ @brief		Returns a list of all the pictures that the given user is tagged in
+ @param     user        The user to get the pictures that he is tagged in
+ @return	A list of all the pictures that the given user is tagged in
+ */
 std::list<Picture> DatabaseAccess::getTaggedPicturesOfUser(const User& user)
 {
-	return std::list<Picture>();
+	std::list<Album> albums = this->getAlbums();
+
+	std::list<Picture> pictures;
+
+	for (const auto& album : albums)
+	{
+		for (const auto& picture : album.getPictures())
+		{
+			if (picture.isUserTagged(user))
+			{
+				pictures.push_back(picture);
+			}
+		}
+	}
+
+	return pictures;
 }
 
 
