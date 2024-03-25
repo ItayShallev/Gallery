@@ -87,9 +87,43 @@ void DatabaseAccess::deleteAlbum(const std::string& albumName, int userId)
 }
 
 
+/**
+ @brief		Callback function for checking the result-rows-count to figure if a given album exists
+ @param		data			A pointer to a boolean variable where the answer to the "question" will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::doesAlbumExistsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<bool*>(data)) = std::stoi(argv[0]) != 0;
+
+	return 0;
+}
+
+
+/**
+ @brief		Checks if a given album exists on the database
+ @param		albumName		The name of the album to check if exists on the database
+ @param		userId			The user that owns the album to check if exists on the database
+ @return	True if the album exists, false otherwise
+ */
 bool DatabaseAccess::doesAlbumExists(const std::string& albumName, int userId)
 {
-	return false;
+	std::string doesAlbumExistsQuery = R"(
+					BEGIN TRANSACTION;
+					
+					SELECT COUNT(*) FROM ALBUMS
+					WHERE NAME = ')" + albumName + "' AND USER_ID = " + std::to_string(userId) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	bool doesAlbumExist = false;
+	executeSqlQuery(doesAlbumExistsQuery, doesAlbumExistsCallback, &doesAlbumExist);
+
+	return doesAlbumExist;
 }
 
 
