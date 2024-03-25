@@ -174,8 +174,28 @@ void DatabaseAccess::printAlbums()
 
 // ********************************************************* Picture *********************************************************
 
+/**
+ @brief		Adds a new picture to an album in the database
+ @param     albumName		The name of the album to add the picture to
+ @param     picture			The Picture object to add to the album
+ @return	Void
+ */
 void DatabaseAccess::addPictureToAlbumByName(const std::string& albumName, const Picture& picture)
 {
+	int albumID = this->getAlbumID(albumName);
+
+	std::string addPictureStatement = R"(
+					BEGIN TRANSACTION;
+					
+					INSERT INTO PICTURES
+					(ID, NAME, LOCATION, CREATION_DATE, ALBUM_ID)
+					VALUES ()" + std::to_string(picture.getId()) + ", '" + picture.getName() + "' , '" + picture.getPath() + "', '" +
+													picture.getCreationDate() + "', " + std::to_string(albumID) + R"();
+					
+					END TRANSACTION;
+					)";
+
+	executeSqlStatement(addPictureStatement);
 }
 
 
@@ -555,6 +575,10 @@ int DatabaseAccess::getNextUserID()
 }
 
 
+/**
+ @brief		Returns the next picture ID to create for a new picture
+ @return	The next picture ID to create for a new picture
+ */
 int DatabaseAccess::getNextPictureID()
 {
 	std::string selectQuery = R"(
