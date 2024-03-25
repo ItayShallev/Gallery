@@ -421,9 +421,42 @@ bool DatabaseAccess::doesUserExists(int userId)
 
 // ********************************************************* Users Statistics *********************************************************
 
+/**
+ @brief		Callback function for getting the amount of albums that a user owns
+ @param		data			A pointer to an integer where the retrieved number of albums will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return
+ */
+int DatabaseAccess::countAlbumsOwnedOfUserCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<int*>(data)) = std::stoi(argv[0]);
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns the number of albums owned by a given user
+ @param     userId          The ID of the user to count how many albums he ownes
+ @return	The number of albums owned by the given user
+ */
 int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
 {
-	return 0;
+	std::string countUserAlbumsQuery = R"(
+					BEGIN TRANSACTION;
+                    
+                    SELECT COUNT(*) FROM ALBUMS
+					WHERE USER_ID = )" + std::to_string(user.getId()) + R"(;
+					
+					END TRANSACTION;					
+					)";
+
+	int userAlbumsNumber = 0;
+	if (!executeSqlQuery(countUserAlbumsQuery, countAlbumsOwnedOfUserCallback, &userAlbumsNumber)) { return -1; };
+
+	return userAlbumsNumber;
 }
 
 

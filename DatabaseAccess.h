@@ -47,6 +47,7 @@ public:
 	bool doesUserExists(int userId) override;
 
 	// ****************************** User Statistics ******************************
+	static int countAlbumsOwnedOfUserCallback(void* data, int argc, char** argv, char** azColName);
 	int countAlbumsOwnedOfUser(const User& user) override;
 	int countAlbumsTaggedOfUser(const User& user) override;
 	int countTagsOfUser(const User& user) override;
