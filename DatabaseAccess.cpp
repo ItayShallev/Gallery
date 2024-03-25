@@ -306,8 +306,8 @@ void DatabaseAccess::removePictureTags(const int pictureID)
 // ********************************************************* Users *********************************************************
 
 /**
- @brief		
- @return
+ @brief		Prints all the users in the database
+ @return	Void
  */
 void DatabaseAccess::printUsers()
 {
@@ -326,9 +326,14 @@ void DatabaseAccess::printUsers()
 }
 
 
+/**
+ @brief		Returns a User object of the user with the given id from the database
+ @param     userId          The id of the user to return as a User object
+ @return	A User object of the user with the given id from the database
+ */
 User DatabaseAccess::getUser(int userId)
 {
-	return User(userId, "");
+	return User(userId, this->getUserName(userId));
 }
 
 
@@ -617,6 +622,45 @@ int DatabaseAccess::getNextPictureID()
 	executeSqlQuery(selectQuery, getNextIDCallback, &nextPictureID);
 
 	return nextPictureID;
+}
+
+
+/**
+ @brief		Callback function for getting the name of a user from a USERS-table-select-query-response
+ @param     data            A pointer to a string where the retrieved name will be stored
+ @param     argc            The number of columns in the result set
+ @param     argv            An array of strings representing the result set
+ @param     azColName       An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getUserNameCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<std::string*>(data)) = argv[0];
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns the name of the user with the given ID
+ @param     userId        The ID of the user to retrieve its name
+ @return	The name of the user with the given ID
+ */
+std::string DatabaseAccess::getUserName(const int userID)
+{
+	std::string getUserNameQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT NAME FROM USERS
+					WHERE ID = )" + std::to_string(userID) + R"(;
+
+                    END TRANSACTION;
+					)";
+
+	std::string userName = "";
+	executeSqlQuery(getUserNameQuery, getUserNameCallback, &userName);
+
+	return userName;
 }
 
 

@@ -15,18 +15,23 @@ public:
 	// ****************************** Album ******************************
 	const std::list<Album> getAlbums() override;
 	const std::list<Album> getAlbumsOfUser(const User& user) override;
+
 	void createAlbum(const Album& album) override;
 	void deleteAlbum(const std::string& albumName, int userId) override;
+
 	static int doesAlbumExistsCallback(void* data, int argc, char** argv, char** azColName);
 	bool doesAlbumExists(const std::string& albumName, int userId) override;
+
 	Album openAlbum(const std::string& albumName) override;
 	void closeAlbum(Album& pAlbum) override;
+
 	void printAlbums() override;
 
 	// ****************************** Picture ******************************
 	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) override;
 	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) override;
 	void removePicture(const int pictureID);
+
 	void tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 	void untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 	void removePictureTags(const int pictureID);
@@ -34,8 +39,10 @@ public:
 	// ****************************** User ******************************
 	void printUsers() override;
 	User getUser(int userId) override;
+
 	void createUser(User& user) override;
 	void deleteUser(const User& user) override;
+
 	bool doesUserExists(int userId) override;
 
 	// ****************************** User Statistics ******************************
@@ -62,8 +69,10 @@ public:
 	// ****************************** Get Info From DB ******************************
 	static int getNextIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getNextUserID() override;
-
 	int getNextPictureID() override;
+
+	static int getUserNameCallback(void* data, int argc, char** argv, char** azColName);
+	std::string getUserName(const int userID);
 
 	static int getAlbumIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getAlbumID(const std::string& albumName, int userId);
