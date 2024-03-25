@@ -43,6 +43,7 @@ public:
 	void createUser(User& user) override;
 	void deleteUser(const User& user) override;
 
+	static int doesUserExistsCallback(void* data, int argc, char** argv, char** azColName);
 	bool doesUserExists(int userId) override;
 
 	// ****************************** User Statistics ******************************

@@ -378,9 +378,42 @@ void DatabaseAccess::deleteUser(const User& user)
 }
 
 
+/**
+ @brief		Callback function for checking the result-rows-count to figure if a given user exists
+ @param		data			A pointer to a boolean variable where the answer to the "question" will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::doesUserExistsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	*(static_cast<bool*>(data)) = std::stoi(argv[0]) != 0;
+
+	return 0;
+}
+
+
+/**
+ @brief		Checks if a given user exists on the database
+ @param		userId			The user of the user to check if exists on the database
+ @return	True if the user exists, false otherwise
+ */
 bool DatabaseAccess::doesUserExists(int userId)
 {
-	return true;
+	std::string doesUserExistsQuery = R"(
+					BEGIN TRANSACTION;
+					
+					SELECT COUNT(*) FROM ALBUMS
+					WHERE USER_ID = )" + std::to_string(userId) + R"(;
+					
+					END TRANSACTION;
+					)";
+
+	bool doesUserExist = false;
+	executeSqlQuery(doesUserExistsQuery, doesUserExistsCallback, &doesUserExist);
+
+	return doesUserExist;
 }
 
 
