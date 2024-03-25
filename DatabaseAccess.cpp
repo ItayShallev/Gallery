@@ -404,8 +404,8 @@ bool DatabaseAccess::doesUserExists(int userId)
 	std::string doesUserExistsQuery = R"(
 					BEGIN TRANSACTION;
 					
-					SELECT COUNT(*) FROM ALBUMS
-					WHERE USER_ID = )" + std::to_string(userId) + R"(;
+					SELECT COUNT(*) FROM USERS
+					WHERE ID = )" + std::to_string(userId) + R"(;
 					
 					END TRANSACTION;
 					)";
@@ -696,10 +696,6 @@ bool DatabaseAccess::initDatabase()
 
 	if (!this->executeSqlStatement(initStatement)) { return false; }
 
-	std::string insertToTables = std::string(INSERT_TO_USERS) + std::string(INSERT_TO_ALBUMS) + std::string(INSERT_INTO_PICTURES) + std::string(INSERT_TO_TAGS);
-
-	if (!this->executeSqlStatement(insertToTables)) { return false; }
-
 	return true;
 }
 
@@ -843,10 +839,29 @@ int DatabaseAccess::getNextUserID()
                     END TRANSACTION;
 					)";
 
-	int nextUserID = -1;
+	int nextUserID = 0;
 	executeSqlQuery(selectQuery, getNextIDCallback, &nextUserID);
 
 	return nextUserID;
+}
+
+
+int DatabaseAccess::getNextAlbumID()
+{
+	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT ID FROM ALBUMS
+	                ORDER BY ID DESC
+					LIMIT 1;
+
+                    END TRANSACTION;
+					)";
+
+	int nextAlbumID = 0;
+	executeSqlQuery(selectQuery, getNextIDCallback, &nextAlbumID);
+
+	return nextAlbumID;
 }
 
 
@@ -866,7 +881,7 @@ int DatabaseAccess::getNextPictureID()
                     END TRANSACTION;
 					)";
 
-	int nextPictureID = -1;
+	int nextPictureID = 0;
 	executeSqlQuery(selectQuery, getNextIDCallback, &nextPictureID);
 
 	return nextPictureID;

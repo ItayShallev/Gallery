@@ -74,6 +74,7 @@ public:
 	// ****************************** Get Info From DB ******************************
 	static int getNextIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getNextUserID() override;
+	int getNextAlbumID() override;
 	int getNextPictureID() override;
 
 	static int getUserNameCallback(void* data, int argc, char** argv, char** azColName);

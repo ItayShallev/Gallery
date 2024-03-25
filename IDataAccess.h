@@ -40,6 +40,7 @@ public:
 
 	// queries
 	virtual int getNextUserID() = 0;
+	virtual int getNextAlbumID() = 0;
 	virtual int getNextPictureID() = 0;
 	virtual User getTopTaggedUser() = 0;
 	virtual Picture getTopTaggedPicture() = 0;

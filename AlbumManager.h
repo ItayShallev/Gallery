@@ -17,6 +17,7 @@ public:
 	using handler_func_t = void (AlbumManager::*)(void);    
 
 private:
+    int m_nextAlbumId{};
     int m_nextPictureId{};
     int m_nextUserId{};
     std::string m_currentAlbumName{};
@@ -61,6 +62,4 @@ private:
 
 	static const std::vector<struct CommandGroup> m_prompts;
 	static const std::map<CommandType, handler_func_t> m_commands;
-
 };
-
