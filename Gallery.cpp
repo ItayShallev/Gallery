@@ -50,9 +50,6 @@ int main(void)
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
 
-	std::cout << "User2 is tagged in " << dataAccess.countAlbumsTaggedOfUser(User(2, "User2")) << " different albums!" << std::endl;
-	std::cout << "User2 is tagged " << dataAccess.countTagsOfUser(User(2, "User2")) << " times!" << std::endl;
-
 	std::string albumName;
 	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;
 

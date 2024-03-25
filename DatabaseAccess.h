@@ -56,6 +56,8 @@ public:
 	// ****************************** Query ******************************
 	static int getTopTaggedUserCallback(void* data, int argc, char** argv, char** azColName);
 	User getTopTaggedUser() override;
+
+	static int getTopTaggedPictureCallback(void* data, int argc, char** argv, char** azColName);
 	Picture getTopTaggedPicture() override;
 	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
 
