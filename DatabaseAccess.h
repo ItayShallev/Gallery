@@ -85,6 +85,9 @@ public:
 	static int getPictureTagsRecordsCallback(void* data, int argc, char** argv, char** azColName);
 	std::list<Record> getPictureTagsRecords(const int pictureID);
 
+	static int getUsersRecordsCallback(void* data, int argc, char** argv, char** azColName);
+	std::list<Record> getUsersRecords();
+
 
 private:
 	sqlite3* _DB;

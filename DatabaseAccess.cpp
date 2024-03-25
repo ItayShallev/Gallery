@@ -305,8 +305,24 @@ void DatabaseAccess::removePictureTags(const int pictureID)
 
 // ********************************************************* Users *********************************************************
 
+/**
+ @brief		
+ @return
+ */
 void DatabaseAccess::printUsers()
 {
+	std::list<Record> usersRecords = this->getUsersRecords();
+
+	std::cout << "Users list:" << std::endl;
+	std::cout << "-----------" << std::endl;
+
+	// Iterating over the users records and printing each user
+	for (auto usersIterator = usersRecords.begin(); usersIterator != usersRecords.end(); ++usersIterator)
+	{
+		User currentUser(std::stoi(usersIterator->at("ID")), usersIterator->at("NAME"));
+
+		std::cout << currentUser << std::endl;
+	}
 }
 
 
@@ -977,4 +993,56 @@ std::list<Record> DatabaseAccess::getPictureTagsRecords(const int pictureID)
 	executeSqlQuery(getPictureTagsQuery, getPictureTagsRecordsCallback, &tagsList);
 
 	return tagsList;
+}
+
+
+/**
+ @brief		Callback function for getting a list of all users in the database from the USERS-table-SELECT-query-response
+ @param		data			A pointer to a list of Records where the retrieved users will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getUsersRecordsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Record currentUserRecord;
+
+	// Inserting the current user record into a Record object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "ID")
+		{
+			currentUserRecord.insert({ "ID", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "NAME")
+		{
+			currentUserRecord.insert({ "NAME", argv[i] });
+		}
+	}
+
+	static_cast<std::list<Record>*>(data)->push_back(currentUserRecord);		// Pushing the created Record object into the users records list
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns a list of all user records in the database
+ @return	A list of all user records in the database
+ */
+std::list<Record> DatabaseAccess::getUsersRecords()
+{
+	std::string getUsersQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM USERS;
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> usersList;
+	executeSqlQuery(getUsersQuery, getUsersRecordsCallback, &usersList);
+
+	return usersList;
 }
