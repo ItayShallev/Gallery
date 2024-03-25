@@ -517,14 +517,14 @@ bool DatabaseAccess::executeSqlQuery(const std::string& query, const funcPtr cal
 // ********************************************************* Get Info *********************************************************
 
 /**
- @brief		Callback function for getting the next user ID from the USERS-table-SELECT-query-response
+ @brief		Callback function for getting the next ID before a new object creation in the database
  @param		data			A pointer to an integer where the retrieved ID will be stored
  @param		argc			The number of columns in the result set
  @param		argv			An array of strings representing the result set
  @param		azColName		An array of strings containing the column names of the result set
  @return	Always returns 0
  */
-int DatabaseAccess::getNextUserIDCallback(void* data, int argc, char** argv, char** azColName)
+int DatabaseAccess::getNextIDCallback(void* data, int argc, char** argv, char** azColName)
 {
 	*(static_cast<int*>(data)) = std::stoi(argv[0]);
 
@@ -539,15 +539,38 @@ int DatabaseAccess::getNextUserIDCallback(void* data, int argc, char** argv, cha
 int DatabaseAccess::getNextUserID()
 {
 	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
 					SELECT ID FROM USERS
 	                ORDER BY ID DESC
 					LIMIT 1;
+
+                    END TRANSACTION;
 					)";
 
 	int nextUserID = -1;
-	executeSqlQuery(selectQuery, getNextUserIDCallback, &nextUserID);
+	executeSqlQuery(selectQuery, getNextIDCallback, &nextUserID);
 
 	return nextUserID;
+}
+
+
+int DatabaseAccess::getNextPictureID()
+{
+	std::string selectQuery = R"(
+					BEGIN TRANSACTION;
+
+					SELECT ID FROM PICTURES
+	                ORDER BY ID DESC
+					LIMIT 1;
+
+                    END TRANSACTION;
+					)";
+
+	int nextPictureID = -1;
+	executeSqlQuery(selectQuery, getNextIDCallback, &nextPictureID);
+
+	return nextPictureID;
 }
 
 

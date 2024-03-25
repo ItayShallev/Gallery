@@ -12,7 +12,7 @@ public:
 	DatabaseAccess();
 	virtual ~DatabaseAccess();
 
-	// album related
+	// ****************************** Album ******************************
 	const std::list<Album> getAlbums() override;
 	const std::list<Album> getAlbumsOfUser(const User& user) override;
 	void createAlbum(const Album& album) override;
@@ -23,7 +23,7 @@ public:
 	void closeAlbum(Album& pAlbum) override;
 	void printAlbums() override;
 
-	// picture related
+	// ****************************** Picture ******************************
 	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) override;
 	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) override;
 	void removePicture(const int pictureID);
@@ -31,25 +31,25 @@ public:
 	void untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 	void removePictureTags(const int pictureID);
 
-	// user related
+	// ****************************** User ******************************
 	void printUsers() override;
 	User getUser(int userId) override;
 	void createUser(User& user) override;
 	void deleteUser(const User& user) override;
 	bool doesUserExists(int userId) override;
 
-	// user statistics
+	// ****************************** User Statistics ******************************
 	int countAlbumsOwnedOfUser(const User& user) override;
 	int countAlbumsTaggedOfUser(const User& user) override;
 	int countTagsOfUser(const User& user) override;
 	float averageTagsPerAlbumOfUser(const User& user) override;
 
-	// queries
+	// ****************************** Query ******************************
 	User getTopTaggedUser() override;
 	Picture getTopTaggedPicture() override;
 	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
 
-	// DB
+	// ****************************** DB ******************************
 	bool initDatabase();
 	bool open() override;
 	void close() override;
@@ -59,9 +59,11 @@ public:
 	template<typename funcPtr>
 	bool executeSqlQuery(const std::string& query, const funcPtr callbackFunction, void* callbackParam);
 
-	// Get info from DB
-	static int getNextUserIDCallback(void* data, int argc, char** argv, char** azColName);
+	// ****************************** Get Info From DB ******************************
+	static int getNextIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getNextUserID() override;
+
+	int getNextPictureID() override;
 
 	static int getAlbumIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getAlbumID(const std::string& albumName, int userId);
@@ -70,7 +72,7 @@ public:
 	static int getPictureIDCallback(void* data, int argc, char** argv, char** azColName);
 	int getPictureID(const std::string& pictureName, int albumID);
 
-	// Get DB records in structure
+	// ****************************** Get DB Records In A Structure ******************************
 	static int getAlbumsRecordsCallback(void* data, int argc, char** argv, char** azColName);
 	std::list<Record> getAlbumsRecords();
 	std::list<Record> getUserAlbumsRecords(const int userID);
