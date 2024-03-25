@@ -127,9 +127,14 @@ bool DatabaseAccess::doesAlbumExists(const std::string& albumName, int userId)
 }
 
 
+/**
+ @brief		Returns an Album object of the album with the given name from the database
+ @param     albumName        The name of the album to return as an Album object
+ @return	An Album object of the album with the given name from the database
+ */
 Album DatabaseAccess::openAlbum(const std::string& albumName)
 {
-	return Album();
+	return this->buildAlbumsList(this->getAlbumRecordsByName(albumName)).front();
 }
 
 
@@ -721,6 +726,29 @@ std::list<Record> DatabaseAccess::getUserAlbumsRecords(const int userID)
 
 
 /**
+ @brief		Returns a list of a single album record with the given name from the database
+ @param     albumName		The name of the album to get the record of
+ @return	list of a single album record with the given name from the database
+ */
+std::list<Record> DatabaseAccess::getAlbumRecordsByName(const std::string albumName)
+{
+	std::string getUserAlbumsQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM ALBUMS
+					WHERE NAME = ')" + albumName + R"(';
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> userAlbumsList;
+	executeSqlQuery(getUserAlbumsQuery, getAlbumsRecordsCallback, &userAlbumsList);
+
+	return userAlbumsList;
+}
+
+
+/**
  @brief		Builds a list of Album objects from the given list of album records
  @param     albumsList        The list of album records to build the Album objects from
  @return	A list of Album objects built from the given list of album records
@@ -734,7 +762,7 @@ std::list<Album> DatabaseAccess::buildAlbumsList(const std::list<Record>& albums
 	{
 		Album currentAlbum(std::stoi(albumsIterator->at("USER_ID")), albumsIterator->at("NAME"), albumsIterator->at("CREATION_DATE"));
 
-		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(currentAlbum.getOwnerId());
+		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(std::stoi(albumsIterator->at("ID")));
 
 		// Adding all the pictures in the album to the Album object
 		for (auto picturesIterator = albumPicturesRecords.begin(); picturesIterator != albumPicturesRecords.end(); ++picturesIterator)
