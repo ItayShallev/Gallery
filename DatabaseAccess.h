@@ -74,6 +74,7 @@ public:
 	static int getAlbumsRecordsCallback(void* data, int argc, char** argv, char** azColName);
 	std::list<Record> getAlbumsRecords();
 	std::list<Record> getUserAlbumsRecords(const int userID);
+	std::list<Record> getAlbumRecordsByName(const std::string albumName);
 	std::list<Album> buildAlbumsList(const std::list<Record>& albumRecords);
 
 	static int getAlbumPicturesRecordsCallback(void* data, int argc, char** argv, char** azColName);
