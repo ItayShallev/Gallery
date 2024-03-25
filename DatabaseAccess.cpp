@@ -594,9 +594,53 @@ User DatabaseAccess::getTopTaggedUser()
 }
 
 
+int DatabaseAccess::getTopTaggedPictureCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Picture* topTaggedPicture = static_cast<Picture*>(data);
+
+	// Iterating over the columns of the result set, building the Picture object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "PICTURE_ID")
+		{
+			topTaggedPicture->setId(std::stoi(argv[i]));
+		}
+		else if (std::string(azColName[i]) == "NAME")
+		{
+			topTaggedPicture->setName(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "LOCATION")
+		{
+			topTaggedPicture->setPath(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "CREATION_DATE")
+		{
+			topTaggedPicture->setCreationDate(argv[i]);
+		}
+	}
+
+	return 0;
+}
+
+
 Picture DatabaseAccess::getTopTaggedPicture()
 {
-	return Picture(0, "Itay's pic");
+	std::string getTopTaggedPictureQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT TAGS.PICTURE_ID, PICTURES.NAME, PICTURES.LOCATION, PICTURES.CREATION_DATE
+		            FROM TAGS INNER JOIN PICTURES ON TAGS.PICTURE_ID = PICTURES.ID
+		            GROUP BY TAGS.PICTURE_ID
+		            ORDER BY COUNT(TAGS.PICTURE_ID) DESC
+	                LIMIT 1;
+					
+					END TRANSACTION;
+					)";
+
+	Picture topTaggedPicture(-1, "");
+	executeSqlQuery(getTopTaggedPictureQuery, getTopTaggedPictureCallback, &topTaggedPicture);
+
+	return topTaggedPicture;
 }
 
 
