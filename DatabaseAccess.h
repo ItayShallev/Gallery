@@ -17,6 +17,7 @@ public:
 	const std::list<Album> getAlbumsOfUser(const User& user) override;
 	void createAlbum(const Album& album) override;
 	void deleteAlbum(const std::string& albumName, int userId) override;
+	static int doesAlbumExistsCallback(void* data, int argc, char** argv, char** azColName);
 	bool doesAlbumExists(const std::string& albumName, int userId) override;
 	Album openAlbum(const std::string& albumName) override;
 	void closeAlbum(Album& pAlbum) override;
