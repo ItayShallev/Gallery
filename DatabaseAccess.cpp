@@ -198,9 +198,15 @@ void DatabaseAccess::addPictureToAlbumByName(const std::string& albumName, const
 	executeSqlStatement(addPictureStatement);
 }
 
-
+/**
+ @brief     Removes a picture from an album in the database
+ @param     albumName       The name of the album to remove the picture from
+ @param     pictureName     The name of the picture to remove from the album
+ @return    Void
+ */
 void DatabaseAccess::removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName)
 {
+	removePicture(this->getPictureID(pictureName, this->getAlbumID(albumName)));
 }
 
 
