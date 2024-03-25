@@ -540,9 +540,57 @@ float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
 
 // ********************************************************* Queries *********************************************************
 
+/**
+ @brief		Callback function for getting the top tagged user in the database
+ @param		data			A pointer to a User object where the top tagged user will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getTopTaggedUserCallback(void* data, int argc, char** argv, char** azColName)
+{
+	User* topTaggedUser = static_cast<User*>(data);
+
+	// Iterating over the columns of the result set, building the User object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "USER_ID")
+		{
+			topTaggedUser->setId(std::stoi(argv[i]));
+		}
+		else if (std::string(azColName[i]) == "NAME")
+		{
+			topTaggedUser->setName(argv[i]);
+		}
+	}
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns the top tagged user in the database
+ @return	The top tagged user in the database
+ */
 User DatabaseAccess::getTopTaggedUser()
 {
-	return User(0, "Itay");
+	std::string getTopTaggedUserQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT TAGS.USER_ID, USERS.NAME
+		            FROM TAGS INNER JOIN USERS ON TAGS.USER_ID = USERS.ID
+		            GROUP BY TAGS.USER_ID
+		            ORDER BY COUNT(TAGS.USER_ID) DESC
+	                LIMIT 1;
+					
+					END TRANSACTION;
+					)";
+
+	User topTaggedUser(-1, "");
+	executeSqlQuery(getTopTaggedUserQuery, getTopTaggedUserCallback, &topTaggedUser);
+
+	return topTaggedUser;
 }
 
 
