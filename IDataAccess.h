@@ -39,6 +39,9 @@ public:
 	virtual float averageTagsPerAlbumOfUser(const User& user) = 0;
 
 	// queries
+	virtual int getNextUserID() = 0;
+	virtual int getNextAlbumID() = 0;
+	virtual int getNextPictureID() = 0;
 	virtual User getTopTaggedUser() = 0;
 	virtual Picture getTopTaggedPicture() = 0;
 	virtual std::list<Picture> getTaggedPicturesOfUser(const User& user) = 0;

@@ -6,10 +6,12 @@
 
 
 AlbumManager::AlbumManager(IDataAccess& dataAccess) :
-    m_dataAccess(dataAccess), m_nextPictureId(100), m_nextUserId(200)
+    m_dataAccess(dataAccess)
 {
-	// Left empty
 	m_dataAccess.open();
+	this->m_nextUserId = this->m_dataAccess.getNextUserID();
+	this->m_nextAlbumId = this->m_dataAccess.getNextAlbumID();
+	this->m_nextPictureId = this->m_dataAccess.getNextPictureID();
 }
 
 void AlbumManager::executeCommand(CommandType command) {
@@ -271,7 +273,7 @@ void AlbumManager::listUserTags()
 	const std::set<int> users = pic.getUserTags();
 
 	if ( 0 == users.size() )  {
-		throw MyException("Error: There is no user tegged in <" + picName + ">.\n");
+		throw MyException("Error: There is no user tagged in <" + picName + ">.\n");
 	}
 
 	std::cout << "Tagged users in picture <" << picName << ">:" << std::endl;
@@ -330,7 +332,7 @@ void AlbumManager::removeUser()
 		}
 	}
 
-	// Removing the from the system
+	// Removing the user from the system 
 	m_dataAccess.deleteUser(user);
 	std::cout << "User @" << userId << " deleted successfully." << std::endl;
 }
@@ -354,7 +356,7 @@ void AlbumManager::userStatistics()
 		"  + Count of Albums: " << m_dataAccess.countAlbumsOwnedOfUser(user) << std::endl <<
 		"  + Count of Albums Tagged: " << m_dataAccess.countAlbumsTaggedOfUser(user) << std::endl <<
 		"  + Count of Tags: " << m_dataAccess.countTagsOfUser(user) << std::endl <<
-		"  + Avarage Tags per Alboum: " << m_dataAccess.averageTagsPerAlbumOfUser(user) << std::endl;
+		"  + Avarage Tags per Album: " << m_dataAccess.averageTagsPerAlbumOfUser(user) << std::endl;
 }
 
 

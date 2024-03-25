@@ -2,9 +2,9 @@
 #include <string>
 #include "MemoryAccess.h"
 #include "AlbumManager.h"
+#include "DatabaseAccess.h"
 
 #define DATE_TIME_BUFFER_SIZE	100
-
 
 
 int getCommandNumberFromUser()
@@ -42,15 +42,13 @@ void printDateAndTime()
 }
 
 
-
 int main(void)
 {
 	// initialization data access
-	MemoryAccess dataAccess;
+	DatabaseAccess dataAccess;
 
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
-
 
 	std::string albumName;
 	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;
@@ -60,7 +58,7 @@ int main(void)
 
 	std::cout << "Type " << HELP << " to a list of all supported commands" << std::endl;
 
-	
+
 	do {
 		int commandNumber = getCommandNumberFromUser();
 		
@@ -72,5 +70,3 @@ int main(void)
 	} 
 	while (true);
 }
-
-
