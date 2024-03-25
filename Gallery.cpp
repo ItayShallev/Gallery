@@ -7,7 +7,6 @@
 #define DATE_TIME_BUFFER_SIZE	100
 
 
-
 int getCommandNumberFromUser()
 {
 	std::string message("\nPlease enter any command(use number): ");
@@ -43,7 +42,6 @@ void printDateAndTime()
 }
 
 
-
 int main(void)
 {
 	// initialization data access
@@ -51,7 +49,6 @@ int main(void)
 
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
-
 
 	std::string albumName;
 	std::cout << "Welcome to Gallery, developed by Itay Shalev!" << std::endl;

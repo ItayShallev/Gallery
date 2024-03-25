@@ -11,9 +11,43 @@ DatabaseAccess::~DatabaseAccess()
 
 // ********************************************************* Album *********************************************************
 
+/**
+ @brief		Returns all the albums in the database
+ @return	A list of all the albums in the database (List<Album(Pictures(Tags))>)
+ */
 const std::list<Album> DatabaseAccess::getAlbums()
 {
-	return std::list<Album>();
+	std::list<Album> albumsList;
+
+	std::list<Record> albumsRecords = this->getAlbumsRecords();
+
+	// Adding all the albums in the DB to the Albums list
+	for (auto albumsIterator = albumsRecords.begin(); albumsIterator != albumsRecords.end(); ++albumsIterator)
+	{
+		Album currentAlbum(std::stoi(albumsIterator->at("USER_ID")), albumsIterator->at("NAME"), albumsIterator->at("CREATION_DATE"));
+
+		std::list<Record> albumPicturesRecords = this->getAlbumPicturesRecords(currentAlbum.getOwnerId());
+		
+		// Adding all the pictures in the album to the Album object
+		for (auto picturesIterator = albumPicturesRecords.begin(); picturesIterator != albumPicturesRecords.end(); ++picturesIterator)
+		{
+			Picture currentPicture(std::stoi(picturesIterator->at("ID")), picturesIterator->at("NAME"), picturesIterator->at("LOCATION"), picturesIterator->at("CREATION_DATE"));
+
+			std::list<Record> pictureTagsRecords = this->getPictureTagsRecords(currentPicture.getId());
+
+			// Adding all the tags in the picture to the Picture object
+			for (auto tagsIterator = pictureTagsRecords.begin(); tagsIterator != pictureTagsRecords.end(); ++tagsIterator)
+			{
+				currentPicture.tagUser(std::stoi(tagsIterator->at("USER_ID")));		// Adding the current tag to the Picture object
+			}
+			
+			currentAlbum.addPicture(currentPicture);		// Adding the current picture to the Album object
+		}
+
+		albumsList.push_back(currentAlbum);		// Adding the current album to the Albums list
+	}
+
+	return albumsList;
 }
 
 
@@ -40,13 +74,13 @@ void DatabaseAccess::deleteAlbum(const std::string& albumName, int userId)
 	int albumID = this->getAlbumID(albumName);
 
 	// Creating a list of all the pictures in the album
-	std::list<Record> albumPictures = this->getAlbumPictures(albumID);
+	std::list<Record> albumPictures = this->getAlbumPicturesRecords(albumID);
 
 	// Iterating over the pictures list, and removing all album inner data (Picture-Tags and Pictures) before removing the album itself
-	for (auto pictureIterator = albumPictures.begin(); pictureIterator != albumPictures.end(); ++pictureIterator)
+	for (auto picturesIterator = albumPictures.begin(); picturesIterator != albumPictures.end(); ++picturesIterator)
 	{
-		this->removePictureTags(std::stoi(pictureIterator->at("ID")));
-		this->removePicture(std::stoi(pictureIterator->at("ID")));
+		this->removePictureTags(std::stoi(picturesIterator->at("ID")));
+		this->removePicture(std::stoi(picturesIterator->at("ID")));
 	}
 
 	// Removing the album itself
@@ -371,13 +405,13 @@ void DatabaseAccess::close()
 
 
 /**
- @brief			Clears the data that stored in the class
+ @brief			Does nothing, nothing to clean
  @return		Void
+ @note			Needed to implemented since its a pure virtual function in the base class
  */
 void DatabaseAccess::clear()
 {
-	this->_albums.clear();
-	this->_users.clear();
+
 }
 
 
@@ -580,14 +614,74 @@ int DatabaseAccess::getPictureID(const std::string& pictureName, int albumID)
 // ********************************************************* Get Info In Structure *********************************************************
 
 /**
- @brief		Callback function for a list of the pictures of an album from the PICTURES-table-SELECT-query-response
+ @brief		Callback function for getting a list of all albums from the ALBUMS-table-SELECT-query-response
+ @param		data			A pointer to a list of Records where the retrieved albums will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getAlbumsRecordsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Record currentAlbumRecord;
+
+	// Inserting the current album record into a Record object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "ID")
+		{
+			currentAlbumRecord.insert({ "ID", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "NAME")
+		{
+			currentAlbumRecord.insert({ "NAME", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "CREATION_DATE")
+		{
+			currentAlbumRecord.insert({ "CREATION_DATE", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "USER_ID")
+		{
+			currentAlbumRecord.insert({ "USER_ID", argv[i] });
+		}
+	}
+
+	static_cast<std::list<Record>*>(data)->push_back(currentAlbumRecord);		// Pushing the created Record object into the albums records list
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns a list of all album records from the database
+ @return	A list of all the album records in the database
+ */
+std::list<Record> DatabaseAccess::getAlbumsRecords()
+{
+	std::string getAlbumsQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM ALBUMS;
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> albumsList;
+	executeSqlQuery(getAlbumsQuery, getAlbumsRecordsCallback, &albumsList);
+
+	return albumsList;
+}
+
+
+/**
+ @brief		Callback function for getting a list of the pictures of an album from the PICTURES-table-SELECT-query-response
  @param		data			A pointer to a list of Records where the retrieved pictures will be stored
  @param		argc			The number of columns in the result set
  @param		argv			An array of strings representing the result set
  @param		azColName		An array of strings containing the column names of the result set
  @return	Always returns 0
  */
-int DatabaseAccess::getAlbumPicturesCallback(void* data, int argc, char** argv, char** azColName)
+int DatabaseAccess::getAlbumPicturesRecordsCallback(void* data, int argc, char** argv, char** azColName)
 {
 	Record currentPictureRecord;
 	
@@ -616,7 +710,7 @@ int DatabaseAccess::getAlbumPicturesCallback(void* data, int argc, char** argv, 
 		}
 	}
 
-	static_cast<std::list<Record>*>(data)->push_back(currentPictureRecord);		// Pushing the created Record object into the picture records list
+	static_cast<std::list<Record>*>(data)->push_back(currentPictureRecord);		// Pushing the created Record object into the pictures records list
 
 	return 0;
 }
@@ -627,9 +721,9 @@ int DatabaseAccess::getAlbumPicturesCallback(void* data, int argc, char** argv, 
  @param		albumID			The ID of the album to get its pictures
  @return	A list of picture records of the given album
  */
-std::list<Record> DatabaseAccess::getAlbumPictures(const int albumID)
+std::list<Record> DatabaseAccess::getAlbumPicturesRecords(const int albumID)
 {
-	std::string getTagsQuery = R"(
+	std::string getAlbumPicturesQuery = R"(
 					BEGIN TRANSACTION;
 					
                     SELECT * FROM PICTURES
@@ -639,7 +733,65 @@ std::list<Record> DatabaseAccess::getAlbumPictures(const int albumID)
 					)";
 
 	std::list<Record> picturesList;
-	executeSqlQuery(getTagsQuery, getAlbumPicturesCallback, &picturesList);
+	executeSqlQuery(getAlbumPicturesQuery, getAlbumPicturesRecordsCallback, &picturesList);
 
 	return picturesList;
+}
+
+
+/**
+ @brief		Callback function for getting a list of the tags of a picture from the TAGS-table-SELECT-query-response
+ @param		data			A pointer to a list of Records where the retrieved tags will be stored
+ @param		argc			The number of columns in the result set
+ @param		argv			An array of strings representing the result set
+ @param		azColName		An array of strings containing the column names of the result set
+ @return	Always returns 0
+ */
+int DatabaseAccess::getPictureTagsRecordsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Record currentTagRecord;
+
+	// Inserting the current tag record into a Record object
+	for (int i = 0; i < argc; i++)
+	{
+		if (std::string(azColName[i]) == "ID")
+		{
+			currentTagRecord.insert({ "ID", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "PICTURE_ID")
+		{
+			currentTagRecord.insert({ "PICTURE_ID", argv[i] });
+		}
+		else if (std::string(azColName[i]) == "USER_ID")
+		{
+			currentTagRecord.insert({ "USER_ID", argv[i] });
+		}
+	}
+
+	static_cast<std::list<Record>*>(data)->push_back(currentTagRecord);		// Pushing the created Record object into the tags records list
+
+	return 0;
+}
+
+
+/**
+ @brief		Returns a list of tag records of the given picture
+ @param		pictureID			The ID of the picture to get its tags
+ @return	A list of tag records of the given picture
+ */
+std::list<Record> DatabaseAccess::getPictureTagsRecords(const int pictureID)
+{
+	std::string getPictureTagsQuery = R"(
+					BEGIN TRANSACTION;
+					
+                    SELECT * FROM TAGS
+                    WHERE PICTURE_ID = )" + std::to_string(pictureID) + R"(;
+										
+					END TRANSACTION;
+					)";
+
+	std::list<Record> tagsList;
+	executeSqlQuery(getPictureTagsQuery, getPictureTagsRecordsCallback, &tagsList);
+
+	return tagsList;
 }
