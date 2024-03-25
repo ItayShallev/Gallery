@@ -35,8 +35,20 @@ const std::list<Album> DatabaseAccess::getAlbumsOfUser(const User& user)
 }
 
 
+/**
+ @brief		Creates a new album in the Albums table in the database
+ @param     album		The album to create in the Albums table
+ @return	Void
+ */
 void DatabaseAccess::createAlbum(const Album& album)
 {
+	std::string createAlbumStatement = R"(
+					INSERT INTO ALBUMS
+					(NAME, CREATION_DATE, USER_ID)
+					VALUES (')" + album.getName() + "', '" + album.getCreationDate() + "', " + std::to_string(album.getOwnerId()) + R"()
+					)";
+
+	executeSqlStatement(createAlbumStatement);
 }
 
 
@@ -77,7 +89,7 @@ void DatabaseAccess::deleteAlbum(const std::string& albumName, int userId)
 
 bool DatabaseAccess::doesAlbumExists(const std::string& albumName, int userId)
 {
-	return true;
+	return false;
 }
 
 
