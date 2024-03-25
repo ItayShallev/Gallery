@@ -521,9 +521,18 @@ int DatabaseAccess::countTagsOfUser(const User& user)
 }
 
 
+/**
+ @brief		Returns the average tags per album of the given user
+ @param     user        The user get the average tags per album of
+ @return	The average tags per album of the given user
+ */
 float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
 {
-	return 0.0f;
+	int albumsTaggedCount = this->countAlbumsTaggedOfUser(user);
+
+	if (albumsTaggedCount == 0) { return 0; }
+
+	return static_cast<float>(countTagsOfUser(user)) / albumsTaggedCount;
 }
 
 
