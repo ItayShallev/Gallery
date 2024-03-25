@@ -86,12 +86,12 @@ VALUES ('Album1', '01/01/2001', 1), ('Album2', '02/02/2002', 2), ('Album3', '03/
 
 #define INSERT_INTO_PICTURES R"(INSERT INTO PICTURES
 (NAME, LOCATION, CREATION_DATE, ALBUM_ID)
-VALUES ('Picture1', '/images', '01/01/2001', 1),
-('Picture2', '/images', '02/02/2002', 2),
-('Picture3', '/images', '03/03/2003', 3),
-('Picture4', '/images', '04/04/2004', 4),
-('Picture5', '/images', '05/05/2005', 5),
-('Picture6', '/images', '06/06/2006', 6);)"
+VALUES ('Picture1', 'C:\Users\Itay\Downloads\Picture1.png', '01/01/2001', 1),
+('Picture2.png', 'C:\Users\Itay\Downloads\Picture2.png', '02/02/2002', 2),
+('Picture3.png', 'C:\Users\Itay\Downloads\Picture3.png', '03/03/2003', 3),
+('Picture4.png', 'C:\Users\Itay\Downloads\Picture4.png', '04/04/2004', 4),
+('Picture5.png', 'C:\Users\Itay\Downloads\Picture5.png', '05/05/2005', 5),
+('Picture6.png', 'C:\Users\Itay\Downloads\Picture6.png', '06/06/2006', 6);)"
 
 #define INSERT_TO_TAGS R"(INSERT INTO TAGS
 (PICTURE_ID, USER_ID)

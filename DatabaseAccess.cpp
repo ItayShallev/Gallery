@@ -149,8 +149,24 @@ void DatabaseAccess::closeAlbum(Album& pAlbum)
 }
 
 
+/**
+ @brief		Prints all the albums in the database
+ @return	Void
+ */
 void DatabaseAccess::printAlbums()
 {
+	std::list<Record> albumsRecords = this->getAlbumsRecords();
+
+	std::cout << "Album list:" << std::endl;
+	std::cout << "-----------" << std::endl;
+
+	// Iterating over the albums records and printing each album
+	for (auto albumsIterator = albumsRecords.begin(); albumsIterator != albumsRecords.end(); ++albumsIterator)
+	{
+		Album currentAlbum(std::stoi(albumsIterator->at("USER_ID")), albumsIterator->at("NAME"), albumsIterator->at("CREATION_DATE"));
+
+		std::cout << std::setw(5) << "* " << currentAlbum;
+	}
 }
 
 
