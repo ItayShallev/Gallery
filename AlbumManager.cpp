@@ -4,6 +4,8 @@
 #include "MyException.h"
 #include "AlbumNotOpenException.h"
 
+PROCESS_INFORMATION pi = { 0 };
+
 
 AlbumManager::AlbumManager(IDataAccess& dataAccess) :
     m_dataAccess(dataAccess)
@@ -210,20 +212,39 @@ void AlbumManager::showPicture()
 	std::string appChoice = getValidChoice("Please select an app to open the picture with:\n1) Microsoft Paint\n2) Irfan View\n",
 		"Invalid option\n", MICROSOFT_PAINT_CHOICE, IRFAN_VIEW_CHOICE) == MICROSOFT_PAINT_CHOICE ? MICROSOFT_PAINT : IRFAN_VIEW;
 
+
 	openPictureInApp(appChoice, pic);
 }
 
 
 /**
- @brief		Opens a given picture in MSPaint in a different process and waits for it to be closed
- @param		picture		The picture to open in MSPaint
+ @brief		Handles Ctrl events
+ @param		fdwCtrlType		The type of ctrl event
+ @return
+ */
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+	switch (fdwCtrlType)
+	{
+	case CTRL_C_EVENT:
+		TerminateProcess(pi.hProcess, 0);		// Terminating the gallery app open process
+		return TRUE;
+
+	default:
+		return FALSE;
+	}
+}
+
+
+/**
+ @brief		Opens a given picture a given gallery app in a separate process and waits for it to be closed
+ @param		picture		The picture to open with the gallery app
  @return	Void
  */
 void AlbumManager::openPictureInApp(const std::string app, const Picture& pic)
 {
 	// Initializing the structures for the 'createProcess()' WinAPI function
 	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
@@ -232,16 +253,20 @@ void AlbumManager::openPictureInApp(const std::string app, const Picture& pic)
 	std::string commandLineArgs = app + pic.getPath();
 	LPSTR lpCommandLineArgs = const_cast<LPSTR>(commandLineArgs.c_str());
 
-	// Creating an MSPaint process and opening the given picture in it
+	// Creating the gallery app process and opening the given picture in it
 	if (CreateProcessA(NULL, lpCommandLineArgs, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
 	{
+		SetConsoleCtrlHandler(CtrlHandler, true);		// Registering the Ctrl+C event handler
+
 		WaitForSingleObject(pi.hProcess, INFINITE);		// Waiting until the created MSPaint process ends (Only when the user
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
+
+		SetConsoleCtrlHandler(CtrlHandler, false);		// Unregistering the Ctrl+C event handler
 	}
 	else
 	{
-		throw MyException("Error: <" + pic.getName() + "> has failed to open on MSPaint.\n");
+		throw MyException("Error: <" + pic.getName() + "> has failed to open witht the gallery app.\n");
 	}
 }
 
