@@ -191,6 +191,7 @@ void AlbumManager::listPicturesInAlbum()
 	std::cout << std::endl;
 }
 
+
 void AlbumManager::showPicture()
 {
 	refreshOpenAlbum();
@@ -205,11 +206,41 @@ void AlbumManager::showPicture()
 		throw MyException("Error: Can't open <" + picName+ "> since it doesnt exist on disk.\n");
 	}
 
-	// Bad practice!!!
-	// Can lead to privileges escalation
-	// You will replace it on WinApi Lab(bonus)
-	system(pic.getPath().c_str()); 
+	openPictureInMSPaint(pic);
 }
+
+
+/**
+ @brief		Opens a given picture in MSPaint in a different process and waits for it to be closed
+ @param		picture		The picture to open in MSPaint
+ @return	Void
+ */
+void AlbumManager::openPictureInMSPaint(const Picture& pic)
+{
+	// Initializing the structures for the 'createProcess()' WinAPI function
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	// Constructing the command line arguments for the 'createProcess()' WinAPI function
+	std::string commandLineArgs = "mspaint.exe " + pic.getPath();
+	LPSTR lpCommandLineArgs = const_cast<LPSTR>(commandLineArgs.c_str());
+
+	// Creating an MSPaint process and opening the given picture in it
+	if (CreateProcessA(NULL, lpCommandLineArgs, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+	{
+		WaitForSingleObject(pi.hProcess, INFINITE);		// Waiting until the created MSPaint process ends (Only when the user
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+	}
+	else
+	{
+		throw MyException("Error: <" + pic.getName() + "> has failed to open on MSPaint.\n");
+	}
+}
+
 
 void AlbumManager::tagUserInPicture()
 {
