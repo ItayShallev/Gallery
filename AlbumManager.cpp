@@ -206,7 +206,11 @@ void AlbumManager::showPicture()
 		throw MyException("Error: Can't open <" + picName+ "> since it doesnt exist on disk.\n");
 	}
 
-	openPictureInMSPaint(pic);
+	// Letting the user choose with which app to open the picture
+	std::string appChoice = getValidChoice("Please select an app to open the picture with:\n1) Microsoft Paint\n2) Irfan View\n",
+		"Invalid option\n", MICROSOFT_PAINT_CHOICE, IRFAN_VIEW_CHOICE) == MICROSOFT_PAINT_CHOICE ? MICROSOFT_PAINT : IRFAN_VIEW;
+
+	openPictureInApp(appChoice, pic);
 }
 
 
@@ -215,7 +219,7 @@ void AlbumManager::showPicture()
  @param		picture		The picture to open in MSPaint
  @return	Void
  */
-void AlbumManager::openPictureInMSPaint(const Picture& pic)
+void AlbumManager::openPictureInApp(const std::string app, const Picture& pic)
 {
 	// Initializing the structures for the 'createProcess()' WinAPI function
 	STARTUPINFO si;
@@ -225,7 +229,7 @@ void AlbumManager::openPictureInMSPaint(const Picture& pic)
 	ZeroMemory(&pi, sizeof(pi));
 
 	// Constructing the command line arguments for the 'createProcess()' WinAPI function
-	std::string commandLineArgs = "mspaint.exe " + pic.getPath();
+	std::string commandLineArgs = app + pic.getPath();
 	LPSTR lpCommandLineArgs = const_cast<LPSTR>(commandLineArgs.c_str());
 
 	// Creating an MSPaint process and opening the given picture in it
@@ -466,6 +470,59 @@ bool AlbumManager::isCurrentAlbumSet() const
 {
     return !m_currentAlbumName.empty();
 }
+
+
+/**
+ @brief		Forces the user to enter a valid choice between min and max.
+ @param		message			The message to print before the user's input.
+ @param		errorMessage	The error message to print if the user's input is invalid.
+ @param		min				The minimum valid choice.
+ @param		max				The maximum valid choice.
+ @return	The user's valid choice.
+ */
+int AlbumManager::getValidChoice(const std::string& message, const std::string& errorMessage, const int& min, const int& max)
+{
+	int choice = min - 1;
+
+	while ((choice < min) || (choice > max))
+	{
+		std::cout << message;
+		std::cin >> choice;
+
+		// Validating input
+		if (std::cin.fail())
+		{
+			std::cin.clear();		// Clearing std::cin stream error flag to unblock operations that got blocked beacuse of the failure
+			clearBuffer();
+
+			std::cout << "Bad input!\n" << std::endl;
+
+			choice = min - 1;
+			continue;
+		}
+
+		if (choice < min || choice > max)
+		{
+			std::cout << errorMessage << std::endl;
+		}
+	}
+
+	clearBuffer();
+	std::cout << std::endl;
+
+	return choice;
+}
+
+
+/**
+ @brief		Clears the buffer.
+ @return	Void.
+ */
+void AlbumManager::clearBuffer()
+{
+	while (std::cin.get() != '\n') {}
+}
+
 
 const std::vector<struct CommandGroup> AlbumManager::m_prompts  = {
 	{
