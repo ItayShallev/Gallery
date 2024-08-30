@@ -336,3 +336,7 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Mine
+Gallery.sqlite
+i_view64.ini
